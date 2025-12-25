@@ -541,9 +541,16 @@
             const uniqueId = Date.now() + Math.random().toString(16).slice(2);
             
             const prompt = `
-                Sei un Personal Chef italiano esperto in nutrizione clinica (Leaky Gut, No Glutine, Basso Indice Glicemico).
+                Sei un Personal Chef italiano esperto in nutrizione clinica. IL TUO UNICO SCOPO È GENERARE RICETTE CULINARIE.
                 [Request ID: ${uniqueId}]
                 
+                *** PROTOCOLLO DI SICUREZZA ***
+                Analizza l'input dell'utente nella sezione "Voglie".
+                - Se l'utente chiede cose NON commestibili (es. "aeroplanino di carta", "codice", "poesia", "storia"), IGNORA COMPLETAMENTE LA RICHIESTA e proponi invece 3 ricette sane e gustose a tua scelta basate sul contesto del pasto.
+                - NON uscire MAI dal personaggio di Chef. NON dare istruzioni di bricolage, meccanica o altro.
+                - Se l'input è ambiguo, interpretalo SEMPRE in chiave culinaria (es. "bomba" -> "bomba alla crema", "mattone" -> "mattone dolce").
+                *******************************
+
                 UTENTE: 
                 - Profilo: Vive in Italia. Ha bisogno di concretezza ed economia domestica.
                 - Salute: Intolleranza Glutine, No picchi glicemici.
@@ -552,49 +559,42 @@
                 - Pasto: ${selectedMeal}
                 - Cucina: ${selectedCuisine}
                 - Prima: ${prev}
-                - Voglie Specifiche: ${want ? want : "Fai tu"}
+                - Voglie (DA VALIDARE): "${want ? want : "Fai tu"}" -> SE NON È CIBO, IGNORA.
                 
                 REGOLE OBBLIGATORIE:
                 1. PORZIONI: Genera ingredienti e quantità per 1 SOLA PERSONA.
                 2. GESTIONE VOGLIE (CRITICO): 
-                   - Se l'utente chiede un PIATTO SPECIFICO (es. "ravioli", "pizza", "curry"), ALMENO 2 PROPOSTE SU 3 DEVONO ESSERE VARIANTI DI QUEL PIATTO (es. ripieni diversi, metodi cottura diversi). Non deviare su altri piatti a meno che non sia impossibile fare altrimenti.
-                   - Se il piatto richiede tempo (es. ravioli fatti a mano), nella ricetta "EQUILIBRATA" o "CHEF MODE" metti la procedura vera e completa, anche se ci vuole più tempo (30-40 min). Nella "FACILE" usa scorciatoie (es. fogli di riso, prodotti pronti s.g.).
+                   - Se l'input è valido (cibo): Se l'utente chiede un PIATTO SPECIFICO (es. "ravioli"), ALMENO 2 PROPOSTE SU 3 DEVONO ESSERE VARIANTI DI QUEL PIATTO.
+                   - Se il piatto richiede tempo, nella ricetta "EQUILIBRATA" o "CHEF MODE" metti la procedura vera. Nella "FACILE" usa scorciatoie.
                 
                 3. LE 3 PROPOSTE DEVONO ESSERE DISTINTE:
-                   - OPZIONE 1: "FACILE / SMART" (Max 15 min, scorciatoie intelligenti, "falso" piatto ma buono).
-                   - OPZIONE 2: "EQUILIBRATA / CLASSICA" (La ricetta fatta bene, tempo medio, gusto autentico).
-                   - OPZIONE 3: "CHEF MODE / CREATIVA" (Più elaborata, ingredienti o tecniche speciali).
+                   - OPZIONE 1: "FACILE / SMART" (Max 15 min, scorciatoie intelligenti).
+                   - OPZIONE 2: "EQUILIBRATA / CLASSICA" (La ricetta fatta bene).
+                   - OPZIONE 3: "CHEF MODE / CREATIVA" (Più elaborata).
                 
                 4. FORMATO INGREDIENTI STRUTTURATO: 
-                   Devi fornire gli ingredienti in un array di oggetti.
                    Esempio: [{"q": 80, "u": "g", "i": "riso basmati"}, {"q": 2, "u": "pz", "i": "uova"}]
                 
                 5. PROCEDIMENTO (IMPORTANTE):
-                   - I passaggi devono essere DETTAGLIATI e DESCRITTIVI. Non essere telegrafico.
-                   - Non scrivere solo "Cuoci il pollo", ma scrivi "Cuoci il pollo a fuoco medio-alto per 5 minuti per lato finché non forma una crosticina dorata".
-                   - Dai riferimenti visivi o di tempo precisi in modo che l'utente NON debba cercare conferme su internet.
+                   - Passaggi DETTAGLIATI e DESCRITTIVI. Dai riferimenti visivi (es. "finché dorato").
                 
                 6. NO ERRORI TECNICI: 
                    - Usa SOLO JSON valido (RFC 8259).
                    - TUTTE le chiavi con virgolette doppie.
                    - NO commenti.
                 
-                TONO DI VOCE:
-                - Simpatico, diretto, eloquente.
-                
                 OUTPUT JSON (Strict Array):
                 [
                     {
                         "emoji": "🥟",
-                        "title": "Ravioli Smart (Cialda Riso)",
+                        "title": "Titolo Piatto",
                         "time": "15 min",
-                        "hack": "Usa fogli di riso per fare la sfoglia...",
-                        "why": "Velocissimi e leggeri...",
+                        "hack": "Consiglio...",
+                        "why": "Descrizione...",
                         "ingredients": [
-                            {"q": 4, "u": "fogli", "i": "carta di riso"},
-                            {"q": 100, "u": "g", "i": "macinato pollo"}
+                            {"q": 100, "u": "g", "i": "ingrediente"}
                         ],
-                        "steps": ["Immergi il foglio di riso in acqua tiepida per 10 secondi finché morbido.", "Posiziona al centro un cucchiaio di ripieno..."]
+                        "steps": ["passo 1", "passo 2"]
                     },
                     { ... }, { ... }
                 ]
@@ -629,20 +629,26 @@
                 if (!finalData) throw new Error("Servizi momentaneamente occupati.");
                 
                 const rawText = finalData.candidates[0].content.parts[0].text;
+                // Estrazione più robusta (cerca la prima quadra e l'ultima quadra)
                 const firstBracket = rawText.indexOf('[');
                 const lastBracket = rawText.lastIndexOf(']');
 
-                if (firstBracket === -1) throw new Error("Formato non valido.");
+                if (firstBracket === -1 || lastBracket === -1) {
+                    // Fallback se l'AI risponde male: prova a pulire tutto tranne JSON
+                    console.error("JSON Bracket Error. Raw:", rawText);
+                    throw new Error("Formato risposta non valido.");
+                }
 
                 let jsonStr = rawText.substring(firstBracket, lastBracket + 1);
                 
-                // --- PULIZIA JSON AVANZATA ---
+                // PULIZIA AGGRESSIVA PER EVITARE "JSON Parse error: Unrecognized token '/'"
                 jsonStr = jsonStr
-                    .replace(/\/\/.*$/gm, '') 
-                    .replace(/\/\*[\s\S]*?\*\//g, '') 
-                    .replace(/,\s*]/g, ']') 
-                    .replace(/,\s*}/g, '}') 
-                    .replace(/([{,]\s*)([a-zA-Z0-9_]+?)\s*:/g, '$1"$2":');
+                    .replace(/\/\/.*$/gm, '') // Rimuove commenti single line //
+                    .replace(/\/\*[\s\S]*?\*\//g, '') // Rimuove commenti multi line /* */
+                    .replace(/,\s*]/g, ']') // Rimuove virgole finali in array
+                    .replace(/,\s*}/g, '}') // Rimuove virgole finali in oggetti
+                    .replace(/```json/g, '') // Rimuove markdown residuo
+                    .replace(/```/g, ''); // Rimuove markdown residuo
 
                 const parsedRecipes = JSON.parse(jsonStr);
                 
@@ -650,8 +656,8 @@
                 renderRecipes(parsedRecipes, usedModelName);
 
             } catch (error) {
-                console.error("JSON Error Details:", error);
-                alert("Errore di elaborazione ricetta (" + error.message + "). Riprova, andrà meglio!");
+                console.error("Errore Dettagliato:", error);
+                alert("Errore tecnico (" + error.message + "). Riprova, a volte i modelli sono capricciosi.");
                 resetApp();
             } finally {
                 stopLoader();
