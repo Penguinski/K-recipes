@@ -6,197 +6,295 @@
     
     <!-- iOS Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="K Recipes">
     <link rel="apple-touch-icon" href="https://fav.farm/🥑"> 
     
     <title>K Recipes</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Fonts: Plus Jakarta Sans (Tech/Geo) & Inter (Clean UI) -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <style>
-        /* --- DESIGN SYSTEM: "HYPER-CLEAN" --- */
+        /* --- DESIGN SYSTEM: SILICON VALLEY TECH --- */
+        :root {
+            --color-emerald: #58E877;
+            --color-emerald-glow: rgba(88, 232, 119, 0.4);
+            --color-acid-yellow: #FFFBA1;
+            --color-electric-purple: #6D28D9;
+            --surface-white: #FFFFFF;
+            --surface-off: #FAFAFA;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border-light: #F1F5F9;
+        }
+
         body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            -webkit-tap-highlight-color: transparent;
-            background-color: #FAFAFA; /* Off-white molto pulito */
-            color: #111;
+            font-family: 'Inter', sans-serif; 
+            background-color: #FFFFFF;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
         
-        .tracking-tighter-custom { letter-spacing: -0.05em; }
-        .tracking-wide-custom { letter-spacing: 0.1em; }
+        h1, h2, h3, .font-tech { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         /* Utilities */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
         .safe-pb { padding-bottom: calc(env(safe-area-inset-bottom) + 30px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* Input Minimalisti (Solo linea) */
-        .input-line {
-            background: transparent;
-            border: none;
-            border-bottom: 1.5px solid #E5E5E5;
-            border-radius: 0;
-            padding: 16px 0;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #000;
-            width: 100%;
-        }
-        .input-line:focus {
-            border-bottom-color: #000;
-            outline: none;
-            box-shadow: none;
-        }
-        .input-line::placeholder {
-            color: #BBB;
-            font-weight: 400;
-        }
-
-        /* Tabs Selezione Pasto */
-        .meal-tab {
-            transition: all 0.2s ease;
+        /* TECH CARDS (Floating, Stroke, Colored Glow) */
+        .tech-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0; /* Stroke sottile */
+            border-radius: 32px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             overflow: hidden;
+        }
+        
+        /* Hover/Active state con Glow */
+        .tech-card:hover, .tech-card:active {
+            transform: translateY(-2px);
+            border-color: var(--color-emerald);
+            box-shadow: 0 12px 30px -10px var(--color-emerald-glow);
+        }
+
+        /* INPUTS (Clean Pill) */
+        .input-tech {
+            width: 100%;
+            background: #F8FAFC;
             border: 1px solid transparent;
+            border-radius: 20px;
+            padding: 20px 24px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s ease;
         }
-        .meal-tab.active {
-            background: #000;
-            color: #FFF;
-            font-weight: 600;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        .input-tech:focus {
+            background: #FFFFFF;
+            border-color: #E2E8F0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
-        .meal-tab.inactive {
-            background: #FFF;
-            color: #888;
-            border-color: #F0F0F0;
-            border-radius: 12px;
-        }
-        .meal-tab.inactive:hover {
-            border-color: #CCC;
-            color: #000;
-        }
+        .input-tech::placeholder { color: #94A3B8; font-weight: 400; }
 
-        /* Bottone Principale (Solid) */
-        .btn-solid {
-            background: #000;
-            color: #FFF;
-            border: none;
-            transition: transform 0.1s ease, box-shadow 0.2s ease;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        /* BUTTONS (Gradient & Glow) */
+        .btn-gradient {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #FFFFFF;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            border-radius: 99px; /* Pill shape */
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
         }
-        .btn-solid:active {
+        .btn-gradient:active {
             transform: scale(0.97);
-            background: #222;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
+        }
+        
+        /* Secondary Button (Ghost) */
+        .btn-ghost {
+            background: #F8FAFC;
+            color: var(--text-muted);
+            border-radius: 99px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-ghost:hover, .btn-ghost:active {
+            background: #E2E8F0;
+            color: var(--text-main);
         }
 
-        /* Card Risultato (Foglio di carta) */
-        .recipe-sheet {
-            background: #FFF;
-            border: 1px solid #F0F0F0;
-            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.06);
+        /* MEAL SELECTOR (Segmented Control) */
+        .meal-container {
+            background: #F1F5F9;
+            padding: 6px;
             border-radius: 24px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+        }
+        .meal-btn {
+            padding: 12px 0;
+            border-radius: 18px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.3, 1, 0.3, 1);
+            color: var(--text-muted);
+        }
+        .meal-btn.active {
+            background: #FFFFFF;
+            color: var(--text-main);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-weight: 700;
         }
 
-        /* Animazioni */
-        .fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+        /* TAGS & BADGES */
+        .badge-acid {
+            background-color: var(--color-acid-yellow);
+            color: #422006;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            letter-spacing: 0.02em;
+        }
+        .badge-emerald {
+            background-color: #ECFDF5;
+            color: #047857;
+            border: 1px solid #D1FAE5;
+            font-weight: 700;
+            border-radius: 99px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        /* ANIMATIONS */
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
-        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        
+        /* GRADIENT TEXT */
+        .text-gradient {
+            background: linear-gradient(135deg, #0F172A 0%, #334155 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
     </style>
 </head>
-<body class="min-h-screen safe-pb overflow-x-hidden">
+<body class="min-h-screen safe-pb">
 
-    <!-- SETUP SCREEN (API KEY) -->
-    <div id="setupScreen" class="fixed inset-0 z-50 bg-[#FAFAFA] flex flex-col items-center justify-center p-8 hidden">
-        <div class="w-full max-w-sm text-center fade-in-up">
-            <h1 class="text-8xl font-black mb-6 tracking-tighter-custom leading-[0.8]">K.</h1>
-            <p class="text-gray-400 font-bold text-[10px] tracking-wide-custom uppercase mb-16">Gut Intelligence Protocol</p>
+    <!-- SETUP SCREEN -->
+    <div id="setupScreen" class="fixed inset-0 z-50 bg-white flex flex-col justify-center items-center p-8 hidden">
+        <div class="w-full max-w-sm text-center fade-in">
+            <div class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-green-500 rounded-[28px] flex items-center justify-center text-4xl mb-8 mx-auto shadow-2xl shadow-emerald-200">
+                🥑
+            </div>
+            <h1 class="font-tech text-5xl font-bold mb-3 tracking-tight text-gradient">K Recipes.</h1>
+            <p class="text-slate-400 font-medium text-sm mb-12">The Future of Gut Intelligence.</p>
             
-            <div class="w-full mb-8 relative">
-                <input type="password" id="apiKeyInput" placeholder="INCOLLA API KEY" 
-                    class="input-line text-center tracking-widest font-mono text-xl">
+            <div class="w-full space-y-4">
+                <input type="password" id="apiKeyInput" placeholder="Incolla la tua API Key" 
+                    class="input-tech text-center tracking-widest text-lg">
+                
+                <button onclick="saveApiKey()" class="btn-gradient w-full py-5 text-lg">
+                    Connetti Gemma 3
+                </button>
             </div>
             
-            <button onclick="saveApiKey()" class="btn-solid w-full py-5 rounded-2xl text-lg font-bold tracking-tight">
-                Connetti
-            </button>
-            
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="block mt-12 text-[10px] font-bold text-gray-300 hover:text-black transition-colors uppercase tracking-wide-custom border-b border-transparent hover:border-black inline-block pb-1">
-                Non hai la chiave?
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="block mt-8 text-xs font-semibold text-slate-400 hover:text-slate-800 transition-colors">
+                Ottieni una chiave gratuita
             </a>
         </div>
     </div>
 
     <!-- APP SCREEN -->
-    <div id="appScreen" class="max-w-md mx-auto min-h-screen flex flex-col p-6 pt-12">
+    <div id="appScreen" class="max-w-xl mx-auto min-h-screen flex flex-col p-6 pt-10">
         
         <!-- HEADER -->
-        <header class="flex justify-between items-start mb-16 fade-in-up">
-            <div>
-                <h1 class="text-7xl font-black tracking-tighter-custom leading-none mb-1">K.</h1>
-                <div class="flex items-center gap-2 pl-1">
-                    <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    <p class="text-gray-400 font-bold text-[9px] tracking-wide-custom uppercase">Gemma Active</p>
+        <header class="flex justify-between items-center mb-10 fade-in">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center text-xl font-bold font-tech">K.</div>
+                <div>
+                    <h1 class="font-tech text-xl font-bold text-slate-900 leading-none">Recipes</h1>
+                    <div class="flex items-center gap-1.5 mt-1">
+                        <span class="w-1.5 h-1.5 bg-[#58E877] rounded-full shadow-[0_0_8px_#58E877]"></span>
+                        <p class="text-slate-400 font-bold text-[10px] uppercase tracking-wide">Gemma 3 Online</p>
+                    </div>
                 </div>
             </div>
-            <button onclick="clearKey()" class="text-[9px] font-bold text-gray-300 hover:text-black tracking-wide-custom uppercase pt-2 transition-colors border-b border-transparent hover:border-black">
-                Logout
-            </button>
+            
+            <div class="flex gap-2">
+                <button onclick="showHistory()" class="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center justify-center transition-all text-slate-600">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                </button>
+                <button onclick="clearKey()" class="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center justify-center transition-all text-slate-400 hover:text-red-500">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
         </header>
 
         <!-- INPUT FORM -->
-        <div id="inputForm" class="space-y-16 fade-in-up delay-1">
+        <div id="inputForm" class="flex-1 flex flex-col gap-10 fade-in delay-1">
             
             <!-- Meal Selector -->
-            <div>
-                <div class="flex justify-between items-end mb-4 px-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wide-custom">Seleziona</label>
-                    <span class="text-[10px] font-bold text-black uppercase tracking-wide-custom" id="mealLabelDisplay">Colazione</span>
+            <section>
+                <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Target Pasto</label>
+                <div class="meal-container">
+                    <button class="meal-btn active" onclick="selectMeal(this, 'Colazione')">Colazione</button>
+                    <button class="meal-btn inactive" onclick="selectMeal(this, 'Pranzo')">Pranzo</button>
+                    <button class="meal-btn inactive" onclick="selectMeal(this, 'Merenda')">Merenda</button>
+                    <button class="meal-btn inactive" onclick="selectMeal(this, 'Cena')">Cena</button>
                 </div>
-                <div class="grid grid-cols-4 gap-2">
-                    <button class="meal-tab active py-4 rounded-xl text-xs" onclick="selectMeal(this, 'Colazione')">Col.</button>
-                    <button class="meal-tab inactive py-4 rounded-xl text-xs" onclick="selectMeal(this, 'Pranzo')">Prz.</button>
-                    <button class="meal-tab inactive py-4 rounded-xl text-xs" onclick="selectMeal(this, 'Merenda')">Mer.</button>
-                    <button class="meal-tab inactive py-4 rounded-xl text-xs" onclick="selectMeal(this, 'Cena')">Cena</button>
-                </div>
-            </div>
+            </section>
 
             <!-- Context Inputs -->
-            <div class="space-y-10">
+            <section class="space-y-6">
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wide-custom mb-2 px-1">Analisi Precedente</label>
-                    <input type="text" id="prevMeal" placeholder="Es. Pasta, Digiuno, Uova..." 
-                        class="input-line">
+                    <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Analisi Precedente</label>
+                    <textarea id="prevMeal" rows="1" placeholder="Cosa hai mangiato prima?" 
+                        class="input-tech resize-none"></textarea>
                 </div>
+                <div>
+                    <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Voglie & Dispensa</label>
+                    <input type="text" id="craving" placeholder="Es. Salmone, qualcosa di fresco..." 
+                        class="input-tech">
+                </div>
+            </section>
 
-                <div>
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wide-custom mb-2 px-1">Target / Voglie</label>
-                    <input type="text" id="craving" placeholder="Es. Salmone, qualcosa di caldo..." 
-                        class="input-line">
-                </div>
+            <!-- ACTION -->
+            <div class="mt-auto pt-4">
+                <button onclick="generateRecipes()" id="genBtn"
+                    class="btn-gradient w-full py-6 text-lg tracking-tight shadow-xl shadow-indigo-100 flex items-center justify-center gap-2 group">
+                    Genera Protocollo
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
             </div>
-
-            <!-- Generate Button -->
-            <button onclick="generateRecipes()" id="genBtn"
-                class="btn-solid w-full py-6 rounded-3xl text-xl font-bold flex items-center justify-center gap-3 mt-8 shadow-xl shadow-gray-200">
-                Genera Protocollo
-            </button>
         </div>
 
         <!-- LOADING STATE -->
-        <div id="loader" class="hidden py-40 text-center fade-in-up">
-            <div class="w-12 h-12 border-2 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-8"></div>
-            <p class="text-xl font-bold tracking-tight text-black">Elaborazione...</p>
-            <p class="text-xs text-gray-400 mt-2 font-mono uppercase tracking-widest">Connessione Gemma 3</p>
+        <div id="loader" class="hidden flex-1 flex flex-col justify-center items-center fade-in">
+            <div class="relative w-20 h-20 mb-8">
+                <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-[#58E877] rounded-full border-t-transparent animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-2xl animate-pulse">🥑</div>
+            </div>
+            <p id="loaderText" class="font-tech text-xl font-bold text-slate-800 tracking-tight">Analisi in corso...</p>
+            <p class="text-xs text-slate-400 mt-2 font-mono uppercase tracking-widest">Gemma 3 Processing</p>
         </div>
 
         <!-- RESULTS AREA -->
-        <div id="resultsArea" class="space-y-8 mt-2 hidden pb-20">
-            <!-- Cards injected via JS -->
+        <div id="resultsArea" class="hidden flex-col gap-8 pb-20">
+            <!-- Injected Cards -->
+        </div>
+
+        <!-- HISTORY VIEW -->
+        <div id="historyView" class="hidden fixed inset-0 z-50 p-6 overflow-y-auto bg-white">
+            <div class="max-w-xl mx-auto pt-6">
+                <div class="flex justify-between items-center mb-10">
+                    <h2 class="font-tech text-3xl font-bold text-slate-900">Cronologia</h2>
+                    <button onclick="hideHistory()" class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors">✕</button>
+                </div>
+                
+                <div class="mb-6 flex justify-end">
+                     <button onclick="clearAllHistory()" class="text-xs font-bold text-red-400 uppercase tracking-widest hover:text-red-600 transition-colors">Cancella Tutto</button>
+                </div>
+
+                <div id="historyList" class="space-y-4">
+                    <!-- List Items -->
+                </div>
+            </div>
         </div>
 
     </div>
@@ -205,31 +303,132 @@
     <script>
         let selectedMeal = 'Colazione';
         let apiKey = localStorage.getItem('k_recipes_key');
+        let loaderInterval;
+
+        const loadingMessages = [
+            "Analisi metabolica...",
+            "Consulto protocollo...",
+            "Calcolo glicemico...",
+            "Matching ingredienti...",
+            "Ottimizzazione sapori..."
+        ];
 
         if (!apiKey) document.getElementById('setupScreen').classList.remove('hidden');
 
         function saveApiKey() {
             const input = document.getElementById('apiKeyInput');
             let key = input.value.trim().replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, '');
-            if (key.length < 5) return alert("La chiave sembra troppo corta");
+            if (key.length < 5) return alert("Chiave non valida");
             localStorage.setItem('k_recipes_key', key);
             location.reload(); 
         }
 
         function clearKey() {
-            if(confirm("Disconnettere?")) { localStorage.removeItem('k_recipes_key'); location.reload(); }
+            if(confirm("Vuoi disconnettere?")) { localStorage.removeItem('k_recipes_key'); location.reload(); }
         }
 
         function selectMeal(btn, meal) {
-            document.querySelectorAll('.meal-tab').forEach(b => {
+            document.querySelectorAll('.meal-btn').forEach(b => {
                 b.classList.remove('active');
-                b.classList.add('inactive');
             });
-            btn.classList.remove('inactive');
             btn.classList.add('active');
             selectedMeal = meal;
-            document.getElementById('mealLabelDisplay').innerText = meal;
         }
+
+        // --- HISTORY ---
+        function getHistory() { return JSON.parse(localStorage.getItem('k_recipes_history') || '[]'); }
+        
+        function saveToHistory(recipes, context) {
+            const history = getHistory();
+            const newItem = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }),
+                meal: selectedMeal,
+                recipes: recipes,
+                model: context.model
+            };
+            history.unshift(newItem); 
+            localStorage.setItem('k_recipes_history', JSON.stringify(history));
+        }
+
+        function showHistory() {
+            document.getElementById('historyView').classList.remove('hidden');
+            renderHistoryList();
+        }
+
+        function hideHistory() {
+            document.getElementById('historyView').classList.add('hidden');
+        }
+
+        function deleteHistoryItem(id) {
+            if(!confirm("Rimuovere?")) return;
+            const history = getHistory().filter(item => item.id !== id);
+            localStorage.setItem('k_recipes_history', JSON.stringify(history));
+            renderHistoryList();
+        }
+
+        function clearAllHistory() {
+            if(!confirm("Cancellare tutto?")) return;
+            localStorage.removeItem('k_recipes_history');
+            renderHistoryList();
+        }
+
+        function renderHistoryList() {
+            const list = document.getElementById('historyList');
+            const history = getHistory();
+            list.innerHTML = '';
+
+            if (history.length === 0) {
+                list.innerHTML = '<div class="text-center py-20 opacity-40 font-tech font-bold text-slate-400">Nessuna ricetta salvata.</div>';
+                return;
+            }
+
+            history.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'tech-card p-5 flex justify-between items-center cursor-pointer hover:border-emerald-400 transition-colors group';
+                el.onclick = (e) => { if(!e.target.closest('button')) loadHistoryItem(item.id); };
+                el.innerHTML = `
+                    <div class="flex-1 pr-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="badge-emerald">${item.meal}</span>
+                            <span class="text-xs text-slate-400 font-medium">${item.date}</span>
+                        </div>
+                        <h3 class="font-tech text-lg font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">${item.recipes[0].title}</h3>
+                    </div>
+                    <button onclick="deleteHistoryItem(${item.id})" class="text-slate-300 hover:text-red-500 transition-colors p-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                `;
+                list.appendChild(el);
+            });
+        }
+
+        function loadHistoryItem(id) {
+            const item = getHistory().find(i => i.id === id);
+            if (item) {
+                hideHistory();
+                document.getElementById('inputForm').classList.add('hidden');
+                document.getElementById('resultsArea').classList.remove('hidden');
+                renderRecipes(item.recipes, item.model || 'Archivio');
+            }
+        }
+
+        // --- AI LOGIC ---
+        function startLoader() {
+            const loaderText = document.getElementById('loaderText');
+            let i = 0;
+            loaderText.innerText = loadingMessages[0];
+            loaderInterval = setInterval(() => {
+                i = (i + 1) % loadingMessages.length;
+                loaderText.style.opacity = 0;
+                setTimeout(() => {
+                    loaderText.innerText = loadingMessages[i];
+                    loaderText.style.opacity = 1;
+                }, 200);
+            }, 1500);
+        }
+
+        function stopLoader() { clearInterval(loaderInterval); }
 
         async function fetchAI(modelName, key, prompt) {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`, {
@@ -244,39 +443,36 @@
             const prev = document.getElementById('prevMeal').value;
             const want = document.getElementById('craving').value;
             
-            // UI Switch
             document.getElementById('inputForm').classList.add('hidden');
             document.getElementById('resultsArea').classList.add('hidden');
+            document.getElementById('resultsArea').innerHTML = '';
             document.getElementById('loader').classList.remove('hidden');
             
+            startLoader();
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
+            const uniqueId = Date.now();
+            
             const prompt = `
-                Sei un Personal Chef d'élite (mix tra Kenji López-Alt e Yotam Ottolenghi) specializzato in nutrizione clinica per Intolleranza al Glutine (NCGS) e Leaky Gut.
+                Sei un Personal Chef d'élite (Moderno, Tech, Sano).
+                [ID: ${uniqueId}]
                 
-                IL TUO UTENTE:
-                - Soffre di permeabilità intestinale (Leaky Gut).
-                - Deve evitare picchi glicemici (Glucose Goddess style).
-                - Ama il cibo gourmet, odia le ricette banali.
+                CLIENTE: Intolleranza Glutine (NCGS), Leaky Gut, No Picchi Glicemici.
+                ATTUALE: Pasto=${selectedMeal}. Prima=${prev}. Voglie=${want}.
                 
-                CONTESTO ATTUALE:
-                - Pasto: ${selectedMeal}
-                - Pasto Precedente (Analisi Metabolica): ${prev} (SE ha mangiato carboidrati prima, ORA proponi rigorosamente LOW CARB/KETO. Se ha digiunato, bilancia bene).
-                - Voglie/Ingredienti: ${want}
-                
-                REGOLE DIETETICHE IMPERATIVE:
+                REGOLE:
                 1. ZERO GLUTINE.
-                2. COLAZIONE: Solo salata o grassi/proteine (es. Yogurt greco), mai dolce zuccherino.
-                3. GLUCOSE HACK: Includi sempre un consiglio per ridurre la curva glicemica specifico per la ricetta.
+                2. Colazione: SALATA o proteica.
+                3. GLUCOSE HACK: Consiglio scientifico.
                 
                 OUTPUT JSON:
                 [
                     {
-                        "emoji": "🥑",
-                        "title": "Nome Piatto Cool",
+                        "emoji": "🌿",
+                        "title": "Titolo Moderno",
                         "time": "15 min",
-                        "hack": "Consiglio scientifico glucosio",
-                        "why": "Perché aiuta il leaky gut",
+                        "hack": "Consiglio...",
+                        "why": "Beneficio...",
                         "ingredients": ["ing1", "ing2"],
                         "steps": ["step1", "step2"]
                     },
@@ -285,102 +481,62 @@
             `;
 
             try {
-                // === LISTA MODELLI GEMMA 3 (Esclusiva) ===
-                const models = [
-                    'gemma-3-27b-it',  // Priorità: Modello Grande
-                    'gemma-3-12b-it',  // Fallback: Modello Medio
-                    // Fallback sui nomi senza -it nel caso l'API li richieda così
-                    'gemma-3-27b',
-                    'gemma-3-12b'
-                ];
-                
-                let response;
-                let finalData = null;
-                let lastError = null;
-                let usedModelName = "";
+                // MODELLI GEMMA 3
+                const models = ['gemma-3-27b-it', 'gemma-3-12b-it', 'gemma-3-27b', 'gemma-3-12b'];
+                let response, finalData, usedModelName;
 
                 for (const model of models) {
                     try {
-                        console.log("Tentativo con:", model);
+                        console.log("Tentativo:", model);
                         response = await fetchAI(model, apiKey, prompt);
 
-                        if (response.status === 404) {
-                            console.warn(model + " non trovato (404), passo al prossimo.");
-                            continue;
-                        }
-                        if (response.status === 429 || response.status === 503) {
-                            console.warn(model + " occupato, passo al prossimo.");
-                            continue;
-                        }
-                        if (response.status === 400 || response.status === 403) {
-                            const errJson = await response.json();
-                            throw new Error("CHIAVE_INVALIDA: " + (errJson.error?.message || "Errore permessi API."));
-                        }
-
-                        if (!response.ok) {
-                            console.warn("Errore generico con " + model + ", passo al prossimo.");
-                            continue;
-                        }
+                        if (response.status === 404 || response.status === 429 || response.status === 503) continue;
+                        if (response.status === 400 || response.status === 403) throw new Error("Chiave non valida.");
+                        if (!response.ok) continue;
 
                         const data = await response.json();
-                        if (!data.candidates || !data.candidates[0].content) {
-                            throw new Error("Risposta vuota");
-                        }
+                        if (!data.candidates || !data.candidates[0].content) throw new Error("Vuoto");
                         
                         finalData = data;
                         usedModelName = model;
                         break; 
 
                     } catch (e) {
-                        lastError = e;
-                        if (e.message.includes("CHIAVE_INVALIDA")) throw e;
+                        if (e.message.includes("Chiave")) throw e;
                     }
                 }
 
-                if (!finalData) {
-                    if (lastError && lastError.message.includes("CHIAVE_INVALIDA")) throw lastError;
-                    throw new Error("Nessun modello Gemma 3 disponibile. Riprova più tardi.");
-                }
-                
-                console.log("Generato con successo usando:", usedModelName);
+                if (!finalData) throw new Error("Servizi momentaneamente occupati.");
                 
                 const rawText = finalData.candidates[0].content.parts[0].text;
-                // Estrazione JSON robusta
                 const firstBracket = rawText.indexOf('[');
                 const lastBracket = rawText.lastIndexOf(']');
 
-                if (firstBracket === -1 || lastBracket === -1) {
-                    throw new Error("L'AI non ha restituito un JSON valido.");
-                }
+                if (firstBracket === -1) throw new Error("Formato non valido.");
 
                 const jsonStr = rawText.substring(firstBracket, lastBracket + 1);
-                renderRecipes(JSON.parse(jsonStr), usedModelName);
+                const parsedRecipes = JSON.parse(jsonStr);
+                
+                saveToHistory(parsedRecipes, { model: usedModelName });
+                renderRecipes(parsedRecipes, usedModelName);
 
             } catch (error) {
-                let msg = error.message;
-                if (msg.includes("CHIAVE_INVALIDA")) {
-                    alert("⚠️ Errore: La chiave API non è valida.");
-                    clearKey();
-                } else {
-                    alert("⚠️ " + msg);
-                }
-                
-                // Reset UI
-                document.getElementById('inputForm').classList.remove('hidden');
-                document.getElementById('resultsArea').classList.add('hidden');
-                document.getElementById('loader').classList.add('hidden');
+                alert("Errore: " + error.message);
+                resetApp();
+            } finally {
+                stopLoader();
             }
         }
 
         function renderRecipes(recipes, modelName) {
             const container = document.getElementById('resultsArea');
             container.innerHTML = `
-                <div class="flex justify-between items-center mb-8">
-                    <button onclick="resetApp()" class="text-[10px] font-bold text-gray-400 hover:text-black uppercase tracking-wide-custom transition-colors">
-                        ← Indietro
+                <div class="flex justify-between items-center mb-6 px-1 fade-in">
+                    <button onclick="resetApp()" class="btn-ghost px-4 py-2 text-xs uppercase tracking-widest flex items-center gap-2">
+                        ← Nuova Ricerca
                     </button>
-                    <span class="text-[8px] font-mono text-gray-300 uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">
-                        Powered by ${modelName}
+                    <span class="font-mono text-[10px] text-slate-300 uppercase tracking-widest border border-slate-100 px-2 py-1 rounded-md">
+                        ${modelName}
                     </span>
                 </div>
             `;
@@ -389,41 +545,49 @@
                 const delayClass = i === 0 ? 'delay-1' : (i === 1 ? 'delay-2' : 'delay-3');
                 
                 container.innerHTML += `
-                    <div class="recipe-sheet p-8 fade-in-up ${delayClass} mb-8 relative overflow-hidden group">
+                    <div class="tech-card p-0 mb-8 fade-in ${delayClass} group">
                         
-                        <div class="flex justify-between items-start mb-6 relative z-10">
-                            <div class="text-7xl -ml-2 group-hover:scale-110 transition-transform duration-300">${r.emoji}</div>
-                            <span class="bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg">${r.time}</span>
+                        <!-- Header -->
+                        <div class="p-8 pb-0">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="text-6xl filter drop-shadow-md transition-transform group-hover:scale-110 duration-300">${r.emoji}</div>
+                                <span class="bg-black text-white text-[11px] font-bold px-4 py-1.5 rounded-full shadow-lg shadow-black/20">${r.time}</span>
+                            </div>
+                            <h2 class="font-tech text-3xl font-bold text-slate-900 leading-tight mb-2">${r.title}</h2>
                         </div>
                         
-                        <h2 class="text-3xl font-black leading-[0.95] mb-6 text-black tracking-tighter-custom relative z-10">${r.title}</h2>
-                        
-                        <!-- GLUCOSE HACK -->
-                        <div class="bg-gray-50 border border-gray-100 p-5 rounded-2xl mb-8 relative z-10">
-                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-wide-custom mb-2">Glucose Hack</p>
-                            <p class="text-sm font-bold text-gray-800 leading-relaxed">${r.hack}</p>
+                        <!-- Glucose Hack -->
+                        <div class="px-8 mt-6">
+                            <div class="bg-[#FFFBA1] p-5 rounded-2xl border border-yellow-200/50">
+                                <p class="font-tech text-[10px] font-bold text-yellow-800 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                                    Glucose Insight
+                                </p>
+                                <p class="text-sm font-semibold text-slate-800 leading-relaxed">${r.hack}</p>
+                            </div>
                         </div>
 
-                        <div class="space-y-8 relative z-10">
+                        <!-- Content -->
+                        <div class="p-8 space-y-8">
                             <div>
-                                <h3 class="text-[10px] font-black text-gray-300 uppercase tracking-wide-custom mb-2">Concept</h3>
-                                <p class="text-base text-gray-600 font-medium leading-relaxed">${r.why}</p>
+                                <h3 class="font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Concept</h3>
+                                <p class="text-base text-slate-600 font-medium leading-relaxed">${r.why}</p>
                             </div>
 
                             <div>
-                                <h3 class="text-[10px] font-black text-gray-300 uppercase tracking-wide-custom mb-3">Ingredienti</h3>
+                                <h3 class="font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Ingredienti</h3>
                                 <div class="flex flex-wrap gap-2">
-                                    ${r.ingredients.map(i => `<span class="text-xs bg-white px-3 py-2 rounded-lg text-gray-900 font-bold border border-gray-100 shadow-sm">${i}</span>`).join('')}
+                                    ${r.ingredients.map(ing => `<span class="bg-slate-50 border border-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">${ing}</span>`).join('')}
                                 </div>
                             </div>
                             
                             <div>
-                                <h3 class="text-[10px] font-black text-gray-300 uppercase tracking-wide-custom mb-3">Procedimento</h3>
+                                <h3 class="font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Procedimento</h3>
                                 <ol class="space-y-4">
                                     ${r.steps.map((s,j)=>`
-                                        <li class="flex gap-4 items-baseline">
-                                            <span class="w-5 h-5 bg-black text-white text-[10px] font-bold flex items-center justify-center rounded-full flex-shrink-0 shadow-md">${j+1}</span>
-                                            <span class="text-sm text-gray-700 font-medium leading-relaxed pt-0.5">${s}</span>
+                                        <li class="flex gap-4">
+                                            <span class="w-6 h-6 bg-slate-900 text-white text-[10px] font-bold flex items-center justify-center rounded-full flex-shrink-0 mt-0.5">${j+1}</span>
+                                            <span class="text-sm text-slate-700 font-medium leading-relaxed">${s}</span>
                                         </li>
                                     `).join('')}
                                 </ol>
@@ -437,6 +601,7 @@
 
         function resetApp() {
             document.getElementById('resultsArea').classList.add('hidden');
+            document.getElementById('historyView').classList.add('hidden');
             document.getElementById('inputForm').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
