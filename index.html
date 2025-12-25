@@ -491,7 +491,7 @@
                 
                 UTENTE: 
                 - Profilo: Vive in Italia. Ha bisogno di concretezza ed economia domestica.
-                - Salute: Intolleranza Glutine, No picchi glicemici.
+                - Salute: Intolleranza Glutine, Leaky Gut, No picchi glicemici.
                 
                 CONTESTO:
                 - Pasto: ${selectedMeal}
@@ -499,9 +499,9 @@
                 - Voglie: ${want ? want : "Ingredienti di stagione, italiani, economici"}
                 
                 REGOLE OBBLIGATORIE:
-                1. INGREDIENTI: Usa principalmente cose che si trovano al supermercato sotto casa in Italia (uova, pollo, riso, patate, verdure di stagione, legumi, olio evo).
+                1. INGREDIENTI: Usa cose che si trovano al supermercato sotto casa in Italia (uova, pollo, riso, patate, verdure di stagione, legumi, olio evo). BASTA AVOCADO, SALMONE e QUINOA (usali solo se richiesti esplicitamente o raramente).
                 2. LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
-                   - OPZIONE 1: "ZERO SBATTI" (Max 15 min, pochissimi ingredienti, padella unica o freddo).
+                   - OPZIONE 1: "ZERO SBATTI" (Max 10 min, pochissimi ingredienti, padella unica o freddo).
                    - OPZIONE 2: "EQUILIBRATA" (Media difficoltà, il giusto compromesso).
                    - OPZIONE 3: "CHEF MODE" (Più elaborata, per quando si ha tempo/voglia).
                 3. FORMATO INGREDIENTI STRUTTURATO: 
@@ -582,6 +582,28 @@
         // VARIABILE GLOBALE PER PORZIONI (Default 1)
         let currentPortions = 1;
 
+        // Funzione helper per formattare gli ingredienti in modo robusto
+        function formatIngredient(ing, multiplier) {
+            let q = ing.q;
+            let u = ing.u || "";
+            let i = ing.i || "";
+            
+            // Controlla se q è un numero valido
+            let isNumber = !isNaN(parseFloat(q)) && isFinite(q);
+            
+            if (isNumber) {
+                let val = parseFloat(q) * multiplier;
+                // Rimuove decimali inutili (es. 1.0 -> 1)
+                let displayQ = Number.isInteger(val) ? val.toString() : val.toFixed(1).replace('.0', '');
+                // Aggiunge spazio tra quantità e unità se l'unità esiste
+                return `${displayQ}${u ? ' ' + u : ''} ${i}`; 
+            } else {
+                // Caso non numerico (es. "qb", "a piacere") -> Non moltiplicare, mostra solo testo
+                // Unisce le parti non vuote con uno spazio
+                return [q, u, i].filter(Boolean).join(" ");
+            }
+        }
+
         function updatePortions(delta, recipeIndex) {
             const input = document.getElementById(`portion-${recipeIndex}`);
             let newVal = parseInt(input.innerText) + delta;
@@ -590,14 +612,13 @@
             
             input.innerText = newVal;
             
-            // Aggiorna le quantità nel DOM
+            // Aggiorna le quantità nel DOM usando la funzione helper sicura
             const container = document.getElementById(`ing-container-${recipeIndex}`);
             const baseData = JSON.parse(container.dataset.ingredients);
             
             container.innerHTML = baseData.map(ing => {
-                const totalQ = (ing.q * newVal).toLocaleString('it-IT'); // Calcola
                 return `<span class="bg-slate-50 border border-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">
-                    ${totalQ}${ing.u} ${ing.i}
+                    ${formatIngredient(ing, newVal)}
                 </span>`;
             }).join('');
         }
@@ -669,7 +690,7 @@
                                     </div>
                                 </div>
                                 <div id="ing-container-${i}" class="flex flex-wrap gap-2" data-ingredients="${ingredientsJson}">
-                                    ${r.ingredients.map(ing => `<span class="bg-slate-50 border border-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">${ing.q}${ing.u} ${ing.i}</span>`).join('')}
+                                    ${r.ingredients.map(ing => `<span class="bg-slate-50 border border-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">${formatIngredient(ing, 1)}</span>`).join('')}
                                 </div>
                             </div>
                             
