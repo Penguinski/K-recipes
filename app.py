@@ -8,143 +8,171 @@ import datetime
 st.set_page_config(
     page_title="K Recipes",
     page_icon="🥑",
-    layout="centered", # Meglio "centered" su mobile per colonna singola
+    layout="centered",
     initial_sidebar_state="collapsed"
 )
 
 # -----------------------------------------------------------------------------
-# 2. CSS "DARK PREMIUM" (Ottimizzato per iPhone OLED)
+# 2. CSS "EDITORIAL MINIMAL" (High Contrast, Bold Typography)
 # -----------------------------------------------------------------------------
-# Questo CSS crea un look nativo, nasconde elementi inutili e crea carte in stile "Glass" scuro.
 css = """
 <style>
-    /* RESET E FONT NATIVO IOS */
+    /* IMPORT FONT MODERN (Inter) */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+    /* RESET GLOBALE */
     html, body, [class*="css"]  {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-family: 'Inter', -apple-system, sans-serif;
+        background-color: #000000;
         color: #ffffff;
     }
 
-    /* SFONDO ONYX/MIDNIGHT */
+    /* SFONDO NERO ASSOLUTO (OLED) */
     .stApp {
-        background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
-        background-attachment: fixed;
+        background-color: #000000;
+        background-image: none;
     }
 
-    /* TITOLI */
-    h1, h2, h3 {
+    /* TITOLI BOLD & BIG */
+    h1 {
+        font-size: 3.5rem !important;
+        font-weight: 900 !important;
+        letter-spacing: -2px !important;
+        line-height: 1 !important;
         color: #ffffff !important;
-        font-weight: 800 !important;
-        letter-spacing: -0.5px;
+        margin-bottom: 0.5rem !important;
+    }
+    h2, h3 {
+        font-weight: 700 !important;
+        letter-spacing: -0.5px !important;
+        color: #f2f2f7 !important;
     }
 
-    /* NASCONDI MENU STREAMLIT E FOOTER */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;} /* Nasconde la barra colorata in alto */
-
-    /* AGGIUSTAMENTO MARGINI IPHONE (Evita il Notch) */
+    /* NASCONDI UI STREAMLIT */
+    #MainMenu, footer, header {visibility: hidden;}
     .block-container {
-        padding-top: 3rem !important;
-        padding-left: 1.5rem !important;
-        padding-right: 1.5rem !important;
-        padding-bottom: 5rem !important;
-        max-width: 100% !important;
+        padding-top: 2rem !important;
+        padding-left: 1.2rem !important;
+        padding-right: 1.2rem !important;
+        padding-bottom: 4rem !important;
     }
 
-    /* INPUT FIELDS (Stile Scuro) */
+    /* INPUT FIELDS (Stile iOS Dark) */
     .stTextInput > div > div > input, 
     .stTextArea > div > div > textarea, 
     .stSelectbox > div > div > div {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background-color: #1c1c1e !important; /* Grigio Apple Dark */
+        color: #ffffff !important;
+        border: 1px solid #333333 !important;
         border-radius: 12px !important;
-    }
-    .stSelectbox > div > div > div {
-        color: white !important;
+        font-size: 16px !important; /* Evita zoom su iOS */
+        padding: 12px !important;
     }
     
-    /* LABEL DEGLI INPUT */
+    /* LABEL DEGLI INPUT (Upper, small, tracking) */
     label {
-        color: rgba(255, 255, 255, 0.7) !important;
-        font-size: 0.9rem !important;
+        color: #8e8e93 !important;
+        text-transform: uppercase;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 1px !important;
+        margin-bottom: 8px !important;
     }
 
-    /* BOTTONE PRINCIPALE (Gradiente Neon) */
+    /* BOTTONE PRINCIPALE (Solid White on Black - High Contrast) */
     div.stButton > button {
-        background: linear-gradient(90deg, #6366f1, #a855f7) !important;
-        color: white !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
         border: none !important;
-        padding: 16px 24px !important;
+        padding: 18px 24px !important;
         font-size: 18px !important;
-        font-weight: 700 !important;
-        border-radius: 16px !important;
+        font-weight: 800 !important;
+        border-radius: 14px !important;
         width: 100% !important;
-        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4) !important;
-        transition: transform 0.2s;
+        transition: transform 0.1s;
     }
     div.stButton > button:active {
-        transform: scale(0.98);
+        transform: scale(0.97);
+        background-color: #e5e5e5 !important;
     }
 
-    /* CARTE RICETTA (Glassmorphism Scuro) */
+    /* CARTE RICETTA (Minimal, Solid) */
     .recipe-card {
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
+        background-color: #1c1c1e;
+        border: 1px solid #333;
+        border-radius: 16px;
         padding: 24px;
-        margin-bottom: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        margin-bottom: 16px;
     }
+    
+    .recipe-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    
+    .recipe-emoji {
+        font-size: 2rem;
+        margin-right: 12px;
+    }
+    
     .recipe-title {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 800;
-        margin-bottom: 10px;
-        background: -webkit-linear-gradient(0deg, #c4b5fd, #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        line-height: 1.2;
+        color: #ffffff;
     }
-    .tag-box {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-right: 8px;
-        margin-bottom: 12px;
-    }
-    .tag-time { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
-    .tag-gut { background: rgba(52, 211, 153, 0.2); color: #6ee7b7; border: 1px solid rgba(52, 211, 153, 0.3); }
-    .tag-hack { background: rgba(251, 146, 60, 0.2); color: #fdba74; border: 1px solid rgba(251, 146, 60, 0.3); }
 
-    /* Separatore */
-    hr { border-color: rgba(255,255,255,0.1); }
+    /* TAGS & BADGES */
+    .meta-tag {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin-right: 6px;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+    }
+    .tag-time { background-color: #333; color: #aaa; }
+    .tag-hack { background-color: #2c2c2e; color: #a29bfe; border: 1px solid #5f55fa; } /* Viola Neon */
+
+    /* TESTI INTERNI */
+    .section-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #8e8e93;
+        margin-top: 16px;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+    .body-text {
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #e5e5ea;
+    }
 </style>
 """
 st.markdown(css, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 3. GESTIONE API KEY (Senza Sidebar)
+# 3. GESTIONE API KEY
 # -----------------------------------------------------------------------------
-# Se non c'è la chiave, mostriamo un box ben visibile in alto
 if "google_api_key" not in st.session_state:
     st.session_state.google_api_key = ""
 
-# Se la chiave è vuota, mostra l'expander APERTO di default
 is_key_missing = st.session_state.google_api_key == ""
 
-with st.expander("🔑 Impostazioni & API Key", expanded=is_key_missing):
+with st.expander("⚙️ IMPOSTAZIONI", expanded=is_key_missing):
     api_input = st.text_input(
-        "Inserisci la tua Google Gemini API Key:", 
+        "API KEY", 
         type="password", 
         value=st.session_state.google_api_key,
-        help="La chiave serve per generare le ricette. Viene salvata solo per questa sessione."
+        placeholder="Incolla qui la tua chiave Gemini"
     )
     if api_input:
         st.session_state.google_api_key = api_input
-        # Se l'utente ha appena inserito la chiave, ricarichiamo la pagina per chiudere il box visivamente (opzionale ma pulito)
         if is_key_missing:
             st.rerun()
 
@@ -152,28 +180,22 @@ with st.expander("🔑 Impostazioni & API Key", expanded=is_key_missing):
 # 4. INTERFACCIA UTENTE
 # -----------------------------------------------------------------------------
 
-# Saluto
-hour = datetime.datetime.now().hour
-if 5 <= hour < 12: greeting = "Buongiorno"
-elif 12 <= hour < 18: greeting = "Buon pomeriggio"
-else: greeting = "Buonasera"
+# Header Minimal
+st.markdown("<h1>K Recipes.</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color: #8e8e93; font-size: 1.1rem; margin-top: -10px; margin-bottom: 30px;'>Nutrizione Funzionale & Alta Cucina.</p>", unsafe_allow_html=True)
 
-st.markdown(f"# 🥑 K Recipes")
-st.markdown(f"_{greeting}! Il tuo chef personale per l'intestino è pronto._")
-st.write("") # Spaziatura
-
-# Form di Input
+# Input Form
 with st.container():
-    meal_type = st.selectbox("🍽️ Che pasto vuoi fare?", ["Colazione", "Pranzo", "Merenda", "Cena"], index=1)
+    meal_type = st.selectbox("MOMENTO", ["Colazione", "Pranzo", "Merenda", "Cena"], index=1)
     
-    c1, c2 = st.columns(2)
-    with c1:
-        prev_meal = st.text_area("🔙 Cos'hai mangiato prima?", placeholder="Es. Pasta (carbo), Digiuno...", height=100)
-    with c2:
-        craving = st.text_input("😋 Di cosa hai voglia?", placeholder="Es. Salmone, Zucchine, Qualcosa di caldo...")
+    st.write("") # Spacer
+    
+    prev_meal = st.text_area("CONTESTO METABOLICO", placeholder="Cosa hai mangiato prima? Es. Digiuno, Pasta...", height=80)
+    craving = st.text_input("VOGLIE / FRIGO", placeholder="Es. Salmone, qualcosa di veloce...")
     
     st.write("")
-    generate_btn = st.button("Genera Menu Chef ✨")
+    st.write("")
+    generate_btn = st.button("GENERA MENU")
 
 # -----------------------------------------------------------------------------
 # 5. LOGICA AI
@@ -183,71 +205,88 @@ def get_ai_response(api_key, meal, prev, want):
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = f"""
-    Agisci come uno Chef esperto (stile Serious Eats) e Nutrizionista per Leaky Gut.
+    Sei un Personal Chef (stile Serious Eats) e Nutrizionista Funzionale.
     
-    UTENTE: Intollerante glutine, permeabilità intestinale.
-    CONTESTO: Pasto: {meal}. Mangiato prima: {prev}. Voglia: {want}.
+    CLIENTE: Intollerante glutine, Leaky Gut, vuole evitare picchi glicemici.
+    SITUAZIONE: Pasto: {meal}. Mangiato prima: {prev}. Voglie: {want}.
     
     REGOLE:
-    1. Se prima ha mangiato Carboidrati -> ORA SOLO LOW CARB/KETO (Proteine+Grassi).
+    1. Se prima carboidrati -> ORA SOLO LOW CARB.
     2. ZERO GLUTINE.
-    3. COLAZIONE: Solo salata o grassi sani.
+    3. COLAZIONE: Solo salata o proteica.
     
     OUTPUT:
-    Genera 3 opzioni brevi separate da "|||".
-    
-    Per ogni opzione usa questo formato HTML/Markdown esatto:
-    # [EMOJI] Nome Piatto
-    TEMPO: 15 min (esempio)
-    BENEFICIO: (Spiegazione scientifica breve)
-    HACK: (Consiglio glucosio: es. mangia prima le verdure)
-    CHEF: (Consiglio tecnico sapore)
-    RICETTA: Ingredienti e passaggi rapidi.
+    Genera 3 opzioni separate da "|||". 
+    Usa esattamente questo formato per ogni opzione (senza markdown headers #, usa solo testo):
+
+    EMOJI: [Inserisci Emoji]
+    TITOLO: [Nome Piatto]
+    TEMPO: [Es. 15 min]
+    HACK: [Consiglio glucosio breve]
+    DESCRIZIONE: [Spiegazione del perché fa bene e come farlo saporito, max 3 frasi]
+    INGREDIENTI: [Lista breve]
     """
     
     response = model.generate_content(prompt)
     return response.text
 
 # -----------------------------------------------------------------------------
-# 6. GENERAZIONE E OUTPUT
+# 6. OUTPUT
 # -----------------------------------------------------------------------------
 if generate_btn:
     if not st.session_state.google_api_key:
-        st.error("⚠️ Per favore inserisci la API Key nel pannello 'Impostazioni' in alto.")
+        st.error("INSERISCI API KEY")
     else:
-        with st.spinner("🍳 Elaborazione menu in corso..."):
+        with st.spinner("ANALISI IN CORSO..."):
             try:
                 result = get_ai_response(st.session_state.google_api_key, meal_type, prev_meal, craving)
                 st.session_state.last_result = result
             except Exception as e:
                 st.error(f"Errore: {e}")
 
-# Mostra risultati se presenti
 if "last_result" in st.session_state:
     st.write("")
     raw_text = st.session_state.last_result
+    options = raw_text.split("|||") if "|||" in raw_text else [raw_text]
     
-    # Parsing delle 3 opzioni
-    if "|||" in raw_text:
-        options = raw_text.split("|||")
-    else:
-        options = [raw_text]
-    
-    # Visualizzazione Cards
     for opt in options:
         if opt.strip():
-            # Pulizia e formattazione visuale
-            # Rimuoviamo il markdown header standard per usarne uno custom
-            lines = opt.strip().split('\n')
-            title = lines[0].replace('#', '').strip()
-            body = '\n'.join(lines[1:])
+            # Parsing manuale semplice
+            lines = [l for l in opt.strip().split('\n') if l.strip()]
             
-            # Rendering della Card
+            # Valori di default
+            emoji = "🥑"
+            title = "Ricetta Chef"
+            time = "15 min"
+            hack = "Mangia proteine prima"
+            desc = ""
+            
+            # Estrazione dati (molto semplice per robustezza)
+            content_html = ""
+            for line in lines:
+                if "EMOJI:" in line: emoji = line.replace("EMOJI:", "").strip()
+                elif "TITOLO:" in line: title = line.replace("TITOLO:", "").strip()
+                elif "TEMPO:" in line: time = line.replace("TEMPO:", "").strip()
+                elif "HACK:" in line: hack = line.replace("HACK:", "").strip()
+                else: content_html += f"<div>{line}</div>"
+
+            # Rendering Card Minimal
             st.markdown(f"""
             <div class="recipe-card">
-                <div class="recipe-title">{title}</div>
-                <div style="font-size: 0.95rem; line-height: 1.6; color: #e2e8f0;">
-                    {body.replace('BENEFICIO:', '<br><b>🧬 Beneficio:</b>').replace('HACK:', '<br><b>📉 Glucose Hack:</b>').replace('CHEF:', '<br><b>👨‍🍳 Chef Tip:</b>')}
+                <div class="recipe-header">
+                    <div class="recipe-emoji">{emoji}</div>
+                    <div class="recipe-title">{title}</div>
+                </div>
+                <div>
+                    <span class="meta-tag tag-time">{time}</span>
+                    <span class="meta-tag tag-hack">GLUCOSE HACK</span>
+                </div>
+                <div class="section-title">Why & How</div>
+                <div class="body-text" style="margin-bottom: 10px; color: #ccc;">
+                    <em>{hack}</em>
+                </div>
+                <div class="body-text">
+                    {content_html.replace('DESCRIZIONE:', '').replace('INGREDIENTI:', '<br><b>INGREDIENTI:</b>')}
                 </div>
             </div>
             """, unsafe_allow_html=True)
