@@ -3,307 +3,251 @@ import google.generativeai as genai
 import datetime
 
 # -----------------------------------------------------------------------------
-# 1. CONFIGURAZIONE PAGINA E STATO
+# 1. CONFIGURAZIONE PAGINA
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="K Recipes | Gut Health Chef",
+    page_title="K Recipes",
     page_icon="🥑",
-    layout="wide",
+    layout="centered", # Meglio "centered" su mobile per colonna singola
     initial_sidebar_state="collapsed"
 )
 
-# Inizializzazione Session State
-if "generated_recipes" not in st.session_state:
-    st.session_state.generated_recipes = None
-if "last_prompt_hash" not in st.session_state:
-    st.session_state.last_prompt_hash = ""
-
 # -----------------------------------------------------------------------------
-# 2. CSS AVANZATO (Glassmorphism, 3D Emojis, Gradienti)
+# 2. CSS "DARK PREMIUM" (Ottimizzato per iPhone OLED)
 # -----------------------------------------------------------------------------
+# Questo CSS crea un look nativo, nasconde elementi inutili e crea carte in stile "Glass" scuro.
 css = """
 <style>
-    /* IMPORT FONT (Opzionale, pulito) */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-
+    /* RESET E FONT NATIVO IOS */
     html, body, [class*="css"]  {
-        font-family: 'Inter', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #ffffff;
     }
 
-    /* SFONDO GRADIENTE VIBRANTE (Copre tutto) */
+    /* SFONDO ONYX/MIDNIGHT */
     .stApp {
-        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-        background-size: 400% 400%;
-        animation: gradient 15s ease infinite;
-    }
-    
-    @keyframes gradient {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+        background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
+        background-attachment: fixed;
     }
 
-    /* RIMOZIONE PADDING E UI STREAMLIT */
+    /* TITOLI */
+    h1, h2, h3 {
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.5px;
+    }
+
+    /* NASCONDI MENU STREAMLIT E FOOTER */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;} /* Nasconde la barra colorata in alto */
+
+    /* AGGIUSTAMENTO MARGINI IPHONE (Evita il Notch) */
     .block-container {
-        padding-top: 2rem !important;
+        padding-top: 3rem !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
         padding-bottom: 5rem !important;
-    }
-    header, footer {
-        visibility: hidden !important;
-    }
-    #MainMenu {
-        visibility: hidden !important;
+        max-width: 100% !important;
     }
 
-    /* STILE 3D PER LE EMOJI (Titoli) */
-    .emoji-3d {
-        font-size: 4rem;
-        filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.3));
-        transition: transform 0.3s ease;
-        display: inline-block;
-    }
-    .emoji-3d:hover {
-        transform: scale(1.1) rotate(10deg);
-    }
-    
-    .title-text {
-        font-size: 3rem; 
-        font-weight: 800;
-        color: white;
-        text-shadow: 0px 4px 10px rgba(0,0,0,0.2);
-        margin-bottom: 0px;
-    }
-    
-    .subtitle-text {
-        font-size: 1.2rem;
-        color: rgba(255,255,255,0.9);
-        margin-bottom: 2rem;
-    }
-
-    /* CONTAINER INPUT (Glassmorphism leggero) */
-    .input-container {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        padding: 25px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        margin-bottom: 2rem;
-    }
-
-    /* STILE WIDGET STREAMLIT (Adattamento al tema) */
-    .stTextInput > label, .stSelectbox > label, .stTextArea > label {
+    /* INPUT FIELDS (Stile Scuro) */
+    .stTextInput > div > div > input, 
+    .stTextArea > div > div > textarea, 
+    .stSelectbox > div > div > div {
+        background-color: rgba(255, 255, 255, 0.1) !important;
         color: white !important;
-        font-weight: 600;
-        font-size: 1rem;
-    }
-    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] > div {
-        background-color: rgba(255, 255, 255, 0.8) !important;
-        border: none !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
         border-radius: 12px !important;
-        color: #333 !important;
+    }
+    .stSelectbox > div > div > div {
+        color: white !important;
+    }
+    
+    /* LABEL DEGLI INPUT */
+    label {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-size: 0.9rem !important;
     }
 
-    /* BOTTONE ACTION (Centrale e Vibrante) */
+    /* BOTTONE PRINCIPALE (Gradiente Neon) */
     div.stButton > button {
-        background: linear-gradient(90deg, #ff8a00, #e52e71);
-        color: white;
-        border: none;
-        padding: 0.8rem 2.5rem;
-        font-size: 1.2rem !important;
+        background: linear-gradient(90deg, #6366f1, #a855f7) !important;
+        color: white !important;
+        border: none !important;
+        padding: 16px 24px !important;
+        font-size: 18px !important;
         font-weight: 700 !important;
-        border-radius: 50px;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        transition: all 0.3s ease;
-        width: 100%;
-        margin-top: 10px;
-    }
-    div.stButton > button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 25px rgba(0,0,0,0.3);
-        border: 1px solid rgba(255,255,255,0.5);
+        border-radius: 16px !important;
+        width: 100% !important;
+        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4) !important;
+        transition: transform 0.2s;
     }
     div.stButton > button:active {
-        transform: translateY(1px);
+        transform: scale(0.98);
     }
 
-    /* CARD RICETTE (Glassmorphism spinto) */
+    /* CARTE RICETTA (Glassmorphism Scuro) */
     .recipe-card {
-        background: rgba(255, 255, 255, 0.85); /* Più opaco per leggibilità testo */
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-radius: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        padding: 25px;
-        color: #1a1a1a;
-        height: 100%;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease;
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
-    .recipe-card:hover {
-        transform: translateY(-5px);
-    }
-    .recipe-card h3 {
-        color: #e52e71;
+    .recipe-title {
+        font-size: 1.5rem;
         font-weight: 800;
-        border-bottom: 2px solid rgba(0,0,0,0.05);
-        padding-bottom: 10px;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
+        background: -webkit-linear-gradient(0deg, #c4b5fd, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
-    .recipe-card strong {
-        color: #2c3e50;
+    .tag-box {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-right: 8px;
+        margin-bottom: 12px;
     }
-    
-    /* Titoli dentro le card per Hack e Why */
-    .highlight-box {
-        background: rgba(231, 60, 126, 0.1);
-        border-left: 4px solid #e73c7e;
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 0 8px 8px 0;
-        font-size: 0.9rem;
-    }
+    .tag-time { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
+    .tag-gut { background: rgba(52, 211, 153, 0.2); color: #6ee7b7; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .tag-hack { background: rgba(251, 146, 60, 0.2); color: #fdba74; border: 1px solid rgba(251, 146, 60, 0.3); }
+
+    /* Separatore */
+    hr { border-color: rgba(255,255,255,0.1); }
 </style>
 """
 st.markdown(css, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 3. SIDEBAR (API KEY)
+# 3. GESTIONE API KEY (Senza Sidebar)
 # -----------------------------------------------------------------------------
-with st.sidebar:
-    st.markdown("### ⚙️ Impostazioni")
-    api_key = st.text_input("Gemini API Key", type="password", help="Inserisci la tua chiave API di Google Gemini")
-    st.markdown("---")
-    st.caption("K Recipes v1.0 • Gut Protocol")
+# Se non c'è la chiave, mostriamo un box ben visibile in alto
+if "google_api_key" not in st.session_state:
+    st.session_state.google_api_key = ""
 
-# -----------------------------------------------------------------------------
-# 4. HEADER & INPUT UI
-# -----------------------------------------------------------------------------
+# Se la chiave è vuota, mostra l'expander APERTO di default
+is_key_missing = st.session_state.google_api_key == ""
 
-# Calcolo saluto dinamico
-current_hour = datetime.datetime.now().hour
-if 5 <= current_hour < 12:
-    greeting = "Buongiorno"
-elif 12 <= current_hour < 18:
-    greeting = "Buon pomeriggio"
-else:
-    greeting = "Buonasera"
-
-col_head1, col_head2 = st.columns([1, 4])
-with col_head1:
-    st.markdown('<div class="emoji-3d">🥑</div>', unsafe_allow_html=True)
-with col_head2:
-    st.markdown(f'<h1 class="title-text">K Recipes</h1><p class="subtitle-text">{greeting}. Cuciniamo qualcosa che fa bene al tuo intestino.</p>', unsafe_allow_html=True)
-
-# Input Container
-st.markdown('<div class="input-container">', unsafe_allow_html=True)
-c1, c2 = st.columns(2)
-with c1:
-    meal_type = st.selectbox("Per quale pasto?", ["Colazione", "Pranzo", "Merenda", "Cena"], index=1)
-    prev_meal = st.text_area("Cosa hai mangiato nel pasto precedente?", placeholder="Es. Pasta al pomodoro (molti carbo), oppure Digiuno...", height=100)
-with c2:
-    ingredients = st.text_input("Voglie o Ingredienti disponibili", placeholder="Es. Salmone, Zucchine, 'Qualcosa di croccante'")
-    
-    # Spazio vuoto per allineare il bottone visivamente
-    st.write("") 
-    st.write("") 
-    generate_btn = st.button("✨ Genera Proposte K")
-
-st.markdown('</div>', unsafe_allow_html=True)
+with st.expander("🔑 Impostazioni & API Key", expanded=is_key_missing):
+    api_input = st.text_input(
+        "Inserisci la tua Google Gemini API Key:", 
+        type="password", 
+        value=st.session_state.google_api_key,
+        help="La chiave serve per generare le ricette. Viene salvata solo per questa sessione."
+    )
+    if api_input:
+        st.session_state.google_api_key = api_input
+        # Se l'utente ha appena inserito la chiave, ricarichiamo la pagina per chiudere il box visivamente (opzionale ma pulito)
+        if is_key_missing:
+            st.rerun()
 
 # -----------------------------------------------------------------------------
-# 5. LOGICA AI (GEMINI)
+# 4. INTERFACCIA UTENTE
 # -----------------------------------------------------------------------------
-def build_prompt(meal, prev, craving):
-    return f"""
-    Sei un Personal Chef d'élite (mix tra Kenji López-Alt e Yotam Ottolenghi) specializzato in nutrizione clinica per Intolleranza al Glutine (NCGS) e Leaky Gut.
-    
-    IL TUO UTENTE:
-    - Soffre di permeabilità intestinale (Leaky Gut).
-    - Deve evitare picchi glicemici (Glucose Goddess style).
-    - Ama il cibo gourmet, odia le ricette banali.
-    
-    CONTESTO ATTUALE:
-    - Pasto: {meal}
-    - Pasto Precedente (Analisi Metabolica): {prev} (SE ha mangiato carboidrati prima, ORA proponi rigorosamente LOW CARB/KETO. Se ha digiunato, bilancia bene).
-    - Voglie/Ingredienti: {craving}
-    
-    REGOLE DIETETICHE IMPERATIVE:
-    1. ZERO GLUTINE.
-    2. COLAZIONE: Solo salata o grassi/proteine (es. Yogurt greco), mai dolce zuccherino.
-    3. GLUCOSE HACK: Includi sempre un consiglio per ridurre la curva glicemica specifico per la ricetta.
-    
-    GENERA 3 OPZIONI DISTINTE (Output separato da "|||"):
-    
-    OPZIONE 1: 🚀 "Fast & Functional" (Veloce, max 15min, focus densità nutrizionale).
-    OPZIONE 2: 🍲 "Deep Nourish" (Caldo, brodoso o cotto lentamente, easy digestion).
-    OPZIONE 3: ✨ "The Vibe / Gourmet" (Contrasti, texture, acidità, impiattamento figo).
-    
-    FORMATO RISPOSTA PER OGNI OPZIONE (Usa Markdown):
-    ### [Emoji 3D pertinente] Nome Piatto Creativo
-    **⏱️ Tempo & Difficoltà**
-    
-    <div class="highlight-box">
-    <b>🧬 Perché ti fa bene:</b> Spiegazione scientifica sintetica legata al Leaky Gut.
-    </div>
 
-    <div class="highlight-box">
-    <b>📉 Glucose Hack:</b> Il trucco per la glicemia (es. ordine degli ingredienti, aceto prima, ecc).
-    </div>
+# Saluto
+hour = datetime.datetime.now().hour
+if 5 <= hour < 12: greeting = "Buongiorno"
+elif 12 <= hour < 18: greeting = "Buon pomeriggio"
+else: greeting = "Buonasera"
+
+st.markdown(f"# 🥑 K Recipes")
+st.markdown(f"_{greeting}! Il tuo chef personale per l'intestino è pronto._")
+st.write("") # Spaziatura
+
+# Form di Input
+with st.container():
+    meal_type = st.selectbox("🍽️ Che pasto vuoi fare?", ["Colazione", "Pranzo", "Merenda", "Cena"], index=1)
     
-    **👨‍🍳 Il Tocco da Chef:** (Tecnica per elevare il sapore).
+    c1, c2 = st.columns(2)
+    with c1:
+        prev_meal = st.text_area("🔙 Cos'hai mangiato prima?", placeholder="Es. Pasta (carbo), Digiuno...", height=100)
+    with c2:
+        craving = st.text_input("😋 Di cosa hai voglia?", placeholder="Es. Salmone, Zucchine, Qualcosa di caldo...")
     
-    **Ingredienti & Procedimento:** (Conciso, bullet points).
+    st.write("")
+    generate_btn = st.button("Genera Menu Chef ✨")
+
+# -----------------------------------------------------------------------------
+# 5. LOGICA AI
+# -----------------------------------------------------------------------------
+def get_ai_response(api_key, meal, prev, want):
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    
+    prompt = f"""
+    Agisci come uno Chef esperto (stile Serious Eats) e Nutrizionista per Leaky Gut.
+    
+    UTENTE: Intollerante glutine, permeabilità intestinale.
+    CONTESTO: Pasto: {meal}. Mangiato prima: {prev}. Voglia: {want}.
+    
+    REGOLE:
+    1. Se prima ha mangiato Carboidrati -> ORA SOLO LOW CARB/KETO (Proteine+Grassi).
+    2. ZERO GLUTINE.
+    3. COLAZIONE: Solo salata o grassi sani.
+    
+    OUTPUT:
+    Genera 3 opzioni brevi separate da "|||".
+    
+    Per ogni opzione usa questo formato HTML/Markdown esatto:
+    # [EMOJI] Nome Piatto
+    TEMPO: 15 min (esempio)
+    BENEFICIO: (Spiegazione scientifica breve)
+    HACK: (Consiglio glucosio: es. mangia prima le verdure)
+    CHEF: (Consiglio tecnico sapore)
+    RICETTA: Ingredienti e passaggi rapidi.
     """
+    
+    response = model.generate_content(prompt)
+    return response.text
 
+# -----------------------------------------------------------------------------
+# 6. GENERAZIONE E OUTPUT
+# -----------------------------------------------------------------------------
 if generate_btn:
-    if not api_key:
-        st.error("⚠️ Inserisci la tua Google Gemini API Key nella sidebar per iniziare.")
+    if not st.session_state.google_api_key:
+        st.error("⚠️ Per favore inserisci la API Key nel pannello 'Impostazioni' in alto.")
     else:
-        try:
-            with st.spinner("🍳 Lo Chef sta analizzando il tuo metabolismo..."):
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                
-                prompt = build_prompt(meal_type, prev_meal, ingredients)
-                response = model.generate_content(prompt)
-                
-                # Salvataggio in sessione
-                st.session_state.generated_recipes = response.text
-                
-        except Exception as e:
-            st.error(f"Qualcosa è andato storto: {e}")
+        with st.spinner("🍳 Elaborazione menu in corso..."):
+            try:
+                result = get_ai_response(st.session_state.google_api_key, meal_type, prev_meal, craving)
+                st.session_state.last_result = result
+            except Exception as e:
+                st.error(f"Errore: {e}")
 
-# -----------------------------------------------------------------------------
-# 6. OUTPUT AREA (3 Cards)
-# -----------------------------------------------------------------------------
-if st.session_state.generated_recipes:
-    st.markdown("---")
+# Mostra risultati se presenti
+if "last_result" in st.session_state:
+    st.write("")
+    raw_text = st.session_state.last_result
     
-    # Gestione split della risposta (se l'AI ha rispettato il separatore) o display semplice
-    content = st.session_state.generated_recipes
-    
-    # Provo a dividere se il separatore è presente, altrimenti mostro tutto
-    if "|||" in content:
-        options = content.split("|||")
-        # Pulisco eventuali spazi vuoti
-        options = [opt.strip() for opt in options if opt.strip()]
+    # Parsing delle 3 opzioni
+    if "|||" in raw_text:
+        options = raw_text.split("|||")
     else:
-        # Fallback se l'AI non ha separato bene
-        options = [content]
-
-    # Layout a colonne responsive (su mobile Streamlit impila automaticamente)
-    cols = st.columns(len(options))
+        options = [raw_text]
     
-    for idx, option_text in enumerate(options):
-        with cols[idx]:
-            # Injecting HTML wrapper for Glassmorphism card
+    # Visualizzazione Cards
+    for opt in options:
+        if opt.strip():
+            # Pulizia e formattazione visuale
+            # Rimuoviamo il markdown header standard per usarne uno custom
+            lines = opt.strip().split('\n')
+            title = lines[0].replace('#', '').strip()
+            body = '\n'.join(lines[1:])
+            
+            # Rendering della Card
             st.markdown(f"""
             <div class="recipe-card">
-                {option_text}
+                <div class="recipe-title">{title}</div>
+                <div style="font-size: 0.95rem; line-height: 1.6; color: #e2e8f0;">
+                    {body.replace('BENEFICIO:', '<br><b>🧬 Beneficio:</b>').replace('HACK:', '<br><b>📉 Glucose Hack:</b>').replace('CHEF:', '<br><b>👨‍🍳 Chef Tip:</b>')}
+                </div>
             </div>
             """, unsafe_allow_html=True)
-
-# Footer invisibile per spacing
-st.markdown("<br><br>", unsafe_allow_html=True)
