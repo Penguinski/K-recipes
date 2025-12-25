@@ -47,7 +47,7 @@
             to { opacity: 1; transform: translateY(0); } 
         }
 
-        /* INPUT STYLING (Soft & Tactile) */
+        /* INPUT STYLING */
         .input-field {
             background: #FFFFFF;
             border: 1px solid #E5E5E5;
@@ -131,7 +131,7 @@
         <!-- INPUT FORM -->
         <div id="inputForm" class="space-y-10 fade-up delay-100">
             
-            <!-- Meal Selector (Pill Style) -->
+            <!-- Meal Selector -->
             <div>
                 <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 ml-2">Momento della giornata</label>
                 <div class="grid grid-cols-4 gap-2 bg-gray-200/50 p-1.5 rounded-[20px]">
@@ -242,22 +242,48 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             const prompt = `
-                Sei Personal Chef (NYT Cooking) & Nutrizionista (Leaky Gut).
-                CLIENTE: No Glutine, No Picchi Glicemici.
-                PASTO: ${selectedMeal}. PRIMA: ${prev}. VOGLIA: ${want}.
-                REGOLE: 1. Se prima carbo -> ORA LOW CARB. 2. NO GLUTINE. 3. Colazione salata.
-                OUTPUT JSON: [{"emoji":"🥑","title":"...","time":"15 min","hack":"...","why":"...","ingredients":["..."],"steps":["..."]},{},{}]
+                Sei un Personal Chef d'élite (mix tra Kenji López-Alt e Yotam Ottolenghi) specializzato in nutrizione clinica per Intolleranza al Glutine (NCGS) e Leaky Gut.
+                
+                IL TUO UTENTE:
+                - Soffre di permeabilità intestinale (Leaky Gut).
+                - Deve evitare picchi glicemici (Glucose Goddess style).
+                - Ama il cibo gourmet, odia le ricette banali.
+                
+                CONTESTO ATTUALE:
+                - Pasto: ${selectedMeal}
+                - Pasto Precedente (Analisi Metabolica): ${prev} (SE ha mangiato carboidrati prima, ORA proponi rigorosamente LOW CARB/KETO. Se ha digiunato, bilancia bene).
+                - Voglie/Ingredienti: ${want}
+                
+                REGOLE DIETETICHE IMPERATIVE:
+                1. ZERO GLUTINE.
+                2. COLAZIONE: Solo salata o grassi/proteine (es. Yogurt greco), mai dolce zuccherino.
+                3. GLUCOSE HACK: Includi sempre un consiglio per ridurre la curva glicemica specifico per la ricetta.
+                
+                OUTPUT JSON:
+                [
+                    {
+                        "emoji": "🥑",
+                        "title": "Nome Piatto Cool",
+                        "time": "15 min",
+                        "hack": "Consiglio scientifico glucosio",
+                        "why": "Perché aiuta il leaky gut",
+                        "ingredients": ["ing1", "ing2"],
+                        "steps": ["step1", "step2"]
+                    },
+                    { ... }, { ... }
+                ]
             `;
 
             try {
-                // === LISTA MODELLI CRUCIALE ===
-                // MANTENERE ASSOLUTAMENTE QUESTO ORDINE
+                // === LISTA MODELLI ESTESA (Tentativi a raffica per Gemini 3) ===
                 const models = [
-                    'gemini-3.0-flash',        // PRIORITY 1
-                    'gemini-2.5-flash',        // PRIORITY 2
-                    'gemini-2.0-flash-exp',   
-                    'gemini-1.5-flash',       
-                    'gemini-1.5-pro'          
+                    'gemini-3.0-flash',          // Nome standard ipotetico
+                    'gemini-3.0-flash-exp',      // Possibile variante Experimental
+                    'gemini-3.0-flash-preview',  // Possibile variante Preview
+                    'gemini-3.0-flash-001',      // Possibile variante Versionata
+                    'gemini-2.5-flash',          // Fallback richiesto
+                    'gemini-2.0-flash-exp',      // Fallback
+                    'gemini-1.5-flash'           // Fallback sicuro
                 ];
                 
                 let response;
@@ -267,7 +293,7 @@
 
                 for (const model of models) {
                     try {
-                        console.log("Tentativo con:", model);
+                        console.log("Provo modello:", model);
                         response = await fetchAI(model, apiKey, prompt);
 
                         if (response.status === 404) {
@@ -308,7 +334,7 @@
                     throw new Error("Nessun modello AI ha risposto. Riprova più tardi.");
                 }
                 
-                console.log("Generato con successo usando:", usedModelName);
+                console.log("Successo con:", usedModelName);
                 
                 const rawText = finalData.candidates[0].content.parts[0].text;
                 // Estrazione JSON robusta
@@ -320,7 +346,7 @@
                 }
 
                 const jsonStr = rawText.substring(firstBracket, lastBracket + 1);
-                renderRecipes(JSON.parse(jsonStr));
+                renderRecipes(JSON.parse(jsonStr), usedModelName);
 
             } catch (error) {
                 let msg = error.message;
@@ -338,12 +364,17 @@
             }
         }
 
-        function renderRecipes(recipes) {
+        function renderRecipes(recipes, modelName) {
             const container = document.getElementById('resultsArea');
             container.innerHTML = `
-                <button onclick="resetApp()" class="w-full py-4 mb-4 text-xs font-bold text-gray-400 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-colors uppercase tracking-widest">
-                    ← Modifica Parametri
-                </button>
+                <div class="flex justify-between items-center mb-4">
+                    <button onclick="resetApp()" class="px-4 py-3 text-xs font-bold text-gray-500 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-colors uppercase tracking-widest">
+                        ← Indietro
+                    </button>
+                    <span class="text-[9px] font-mono text-gray-300 uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">
+                        ${modelName}
+                    </span>
+                </div>
             `;
             
             recipes.forEach((r, i) => {
