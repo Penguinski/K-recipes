@@ -83,7 +83,7 @@
 
         <div id="loader" class="hidden py-32 text-center fade-in">
             <div class="animate-spin h-12 w-12 border-4 border-gray-200 border-t-black rounded-full mx-auto mb-6"></div>
-            <p class="text-base font-bold text-black animate-pulse">Consulto lo Chef...</p>
+            <p class="text-base font-bold text-black animate-pulse">Analisi Metabolica...</p>
         </div>
 
         <div id="resultsArea" class="space-y-8 mt-4 hidden pb-20"></div>
@@ -122,12 +122,6 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
-            
-            // Gestione errori specifica per il fallback
-            if (response.status === 404) throw new Error("MODEL_NOT_FOUND");
-            if (response.status === 429) throw new Error("QUOTA_EXCEEDED"); // Troppe richieste
-            if (response.status === 503) throw new Error("SERVER_BUSY");    // Server sovraccarico
-            
             return response;
         }
 
@@ -147,55 +141,84 @@
             `;
 
             try {
-                // MODIFICATO: Ordine e logica di fallback
-                // Il 3 e il 2.0 sono sperimentali e possono dare errori di quota facilmente.
-                // Se falliscono, passiamo SILENZIOSAMENTE al 1.5 Flash che è solido.
-                const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-                let response, usedModel;
+                // === LISTA MODELLI AGGIORNATA SU RICHIESTA UTENTE ===
+                // Inseriamo gemini-3.0-flash e gemini-2.5-flash come richiesto.
+                // Se esistono, verranno usati. Se no, fallback sugli altri.
+                const models = [
+                    'gemini-3.0-flash',        // Richiesta esplicita Utente
+                    'gemini-2.5-flash',        // Richiesta esplicita Utente
+                    'gemini-2.0-flash-exp',    // Sperimentale recente
+                    'gemini-1.5-flash',        // Stabile e sicuro
+                    'gemini-1.5-pro'           // Backup potente
+                ];
+                
+                let response;
+                let finalData = null;
                 let lastError = null;
+                let usedModelName = "";
 
                 for (const model of models) {
                     try {
-                        console.log("Provo modello:", model);
+                        console.log("Tentativo connessione a:", model);
                         response = await fetchAI(model, apiKey, prompt);
-                        
-                        if (!response.ok) {
-                             const err = await response.json();
-                             throw new Error(err.error?.message || "API Error");
-                        }
-                        usedModel = model;
-                        break; // Successo! Esci dal loop
-                    } catch (e) {
-                        console.warn(`Modello ${model} fallito: ${e.message}`);
-                        lastError = e;
-                        
-                        // Se l'errore è QUOTA o NOT FOUND, continua col prossimo modello.
-                        // Non bloccare l'utente!
-                        if (e.message === "MODEL_NOT_FOUND" || e.message === "QUOTA_EXCEEDED" || e.message === "SERVER_BUSY") {
+
+                        // 404 = Modello non trovato (non esiste o non accessibile) -> Prova il prossimo
+                        if (response.status === 404) {
+                            console.warn(model + " non trovato (404), passo al prossimo.");
                             continue;
                         }
                         
-                        // Se è un errore diverso (es. chiave sbagliata), fermati.
-                        throw e;
+                        // 429/503 = Quota o Server -> Prova il prossimo
+                        if (response.status === 429 || response.status === 503) {
+                            console.warn(model + " occupato, passo al prossimo.");
+                            continue;
+                        }
+
+                        // 400/403 = Chiave errata -> Stop
+                        if (response.status === 400 || response.status === 403) {
+                            const errJson = await response.json();
+                            throw new Error("CHIAVE_INVALIDA: " + (errJson.error?.message || "Errore permessi API."));
+                        }
+
+                        if (!response.ok) {
+                            console.warn("Errore generico con " + model + ", passo al prossimo.");
+                            continue;
+                        }
+
+                        // Successo!
+                        const data = await response.json();
+                        if (!data.candidates || !data.candidates[0].content) {
+                            throw new Error("Risposta vuota");
+                        }
+                        
+                        finalData = data;
+                        usedModelName = model; // Memorizziamo quale ha funzionato
+                        break; 
+
+                    } catch (e) {
+                        lastError = e;
+                        if (e.message.includes("CHIAVE_INVALIDA")) throw e;
                     }
                 }
 
-                if (!response) {
-                    // Se tutti i modelli hanno fallito
-                    if (lastError && lastError.message === "QUOTA_EXCEEDED") {
-                         throw new Error("Tutti i modelli sono sovraccarichi al momento. Riprova tra 1 minuto.");
-                    }
-                    throw new Error("Impossibile contattare l'intelligenza artificiale.");
+                if (!finalData) {
+                    if (lastError && lastError.message.includes("CHIAVE_INVALIDA")) throw lastError;
+                    throw new Error("Nessun modello AI ha risposto. Riprova più tardi.");
                 }
                 
-                const data = await response.json();
-                const jsonStr = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+                console.log("Generato con successo usando:", usedModelName);
+                
+                const jsonStr = finalData.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
                 renderRecipes(JSON.parse(jsonStr));
 
             } catch (error) {
                 let msg = error.message;
-                if (msg.includes("API key not valid")) msg = "Chiave API non valida. Premi RESET.";
-                alert("⚠️ " + msg);
+                if (msg.includes("CHIAVE_INVALIDA")) {
+                    alert("⚠️ Errore Chiave API: Chiave non valida.");
+                    clearKey();
+                } else {
+                    alert("⚠️ " + msg);
+                }
                 toggleUI(false);
             }
         }
