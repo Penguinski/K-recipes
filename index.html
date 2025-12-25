@@ -552,40 +552,43 @@
                 - Pasto: ${selectedMeal}
                 - Cucina: ${selectedCuisine}
                 - Prima: ${prev}
-                - Voglie: ${want ? want : "Fai tu"}
+                - Voglie Specifiche: ${want ? want : "Fai tu"}
                 
                 REGOLE OBBLIGATORIE:
                 1. PORZIONI: Genera ingredienti e quantità per 1 SOLA PERSONA.
-                2. INGREDIENTI: Usa principalmente cose che si trovano al supermercato sotto casa in Italia.
-                3. LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
-                   - OPZIONE 1: "FACILE" (Max 15 min, pochissimi ingredienti, padella unica o freddo).
-                   - OPZIONE 2: "EQUILIBRATA" (Media difficoltà, il giusto compromesso).
-                   - OPZIONE 3: "CHEF MODE" (Più elaborata, per quando si ha tempo/voglia).
+                2. GESTIONE VOGLIE (CRITICO): 
+                   - Se l'utente chiede un PIATTO SPECIFICO (es. "ravioli", "pizza", "curry"), ALMENO 2 PROPOSTE SU 3 DEVONO ESSERE VARIANTI DI QUEL PIATTO (es. ripieni diversi, metodi cottura diversi). Non deviare su altri piatti a meno che non sia impossibile fare altrimenti.
+                   - Se il piatto richiede tempo (es. ravioli fatti a mano), nella ricetta "EQUILIBRATA" o "CHEF MODE" metti la procedura vera e completa, anche se ci vuole più tempo (30-40 min). Nella "FACILE" usa scorciatoie (es. fogli di riso, prodotti pronti s.g.).
+                
+                3. LE 3 PROPOSTE DEVONO ESSERE DISTINTE:
+                   - OPZIONE 1: "FACILE / SMART" (Max 15 min, scorciatoie intelligenti, "falso" piatto ma buono).
+                   - OPZIONE 2: "EQUILIBRATA / CLASSICA" (La ricetta fatta bene, tempo medio, gusto autentico).
+                   - OPZIONE 3: "CHEF MODE / CREATIVA" (Più elaborata, ingredienti o tecniche speciali).
+                
                 4. FORMATO INGREDIENTI STRUTTURATO: 
                    Devi fornire gli ingredienti in un array di oggetti.
                    Esempio: [{"q": 80, "u": "g", "i": "riso basmati"}, {"q": 2, "u": "pz", "i": "uova"}]
-                5. CRITICO: 
+                5. NO ERRORI TECNICI: 
                    - Usa SOLO JSON valido (RFC 8259).
-                   - TUTTE le chiavi devono avere le virgolette doppie (es. "q": 10, non q: 10).
-                   - NON inserire commenti (//).
+                   - TUTTE le chiavi con virgolette doppie.
+                   - NO commenti.
                 
                 TONO DI VOCE:
-                - Simpatico, diretto, da "amico che cucina". Eloquente e chiaro.
-                - Niente anglicismi inutili.
+                - Simpatico, diretto, eloquente.
                 
                 OUTPUT JSON (Strict Array):
                 [
                     {
-                        "emoji": "🍝",
-                        "title": "Nome del Piatto",
-                        "time": "Tempo prep.",
-                        "hack": "Consiglio furbo...",
-                        "why": "Perché è buono...",
+                        "emoji": "🥟",
+                        "title": "Ravioli Smart (Cialda Riso)",
+                        "time": "15 min",
+                        "hack": "Usa fogli di riso per fare la sfoglia...",
+                        "why": "Velocissimi e leggeri...",
                         "ingredients": [
-                            {"q": 80, "u": "g", "i": "pasta senza glutine"},
-                            {"q": 200, "u": "g", "i": "passata di pomodoro"}
+                            {"q": 4, "u": "fogli", "i": "carta di riso"},
+                            {"q": 100, "u": "g", "i": "macinato pollo"}
                         ],
-                        "steps": ["passo 1", "passo 2"]
+                        "steps": ["ammorbidisci carta", "chiudi e cuoci"]
                     },
                     { ... }, { ... }
                 ]
@@ -627,13 +630,12 @@
 
                 let jsonStr = rawText.substring(firstBracket, lastBracket + 1);
                 
-                // --- PULIZIA JSON AVANZATA (Fix per commenti e chiavi errate) ---
+                // --- PULIZIA JSON AVANZATA ---
                 jsonStr = jsonStr
-                    .replace(/\/\/.*$/gm, '') // Rimuove commenti con //
-                    .replace(/\/\*[\s\S]*?\*\//g, '') // Rimuove commenti con /* */
-                    .replace(/,\s*]/g, ']') // Rimuove virgole finali in array
-                    .replace(/,\s*}/g, '}') // Rimuove virgole finali in oggetti
-                    // Fix chiavi non quotate (es. q: -> "q":)
+                    .replace(/\/\/.*$/gm, '') 
+                    .replace(/\/\*[\s\S]*?\*\//g, '') 
+                    .replace(/,\s*]/g, ']') 
+                    .replace(/,\s*}/g, '}') 
                     .replace(/([{,]\s*)([a-zA-Z0-9_]+?)\s*:/g, '$1"$2":');
 
                 const parsedRecipes = JSON.parse(jsonStr);
@@ -642,8 +644,8 @@
                 renderRecipes(parsedRecipes, usedModelName);
 
             } catch (error) {
-                console.error("JSON Error:", error);
-                alert("Errore tecnico (" + error.message + "). Riprova, l'AI a volte è capricciosa!");
+                console.error("JSON Error Details:", error);
+                alert("Errore di elaborazione ricetta (" + error.message + "). Riprova, andrà meglio!");
                 resetApp();
             } finally {
                 stopLoader();
@@ -711,7 +713,7 @@
                 const delayClass = i === 0 ? 'delay-1' : (i === 1 ? 'delay-2' : 'delay-3');
                 
                 let difficultyBadge = '';
-                if (i === 0) difficultyBadge = '<span class="badge-acid">FACILE</span>';
+                if (i === 0) difficultyBadge = '<span class="badge-acid">ZERO SBATTI</span>';
                 else if (i === 1) difficultyBadge = '<span class="badge-emerald bg-blue-50 text-blue-600 border-blue-100">EQUILIBRATA</span>';
                 else difficultyBadge = '<span class="badge-emerald bg-purple-50 text-purple-600 border-purple-100">CHEF MODE</span>';
 
