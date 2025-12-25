@@ -135,6 +135,31 @@
             font-weight: 700;
         }
 
+        /* CUISINE SELECTOR (Horizontal Chips) */
+        .cuisine-btn {
+            padding: 10px 20px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            flex-shrink: 0;
+        }
+        .cuisine-btn.active {
+            background: #0F172A;
+            color: #FFFFFF;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+        }
+        .cuisine-btn.inactive {
+            background: #F8FAFC;
+            color: var(--text-muted);
+            border-color: #E2E8F0;
+        }
+        .cuisine-btn.inactive:active {
+            background: #E2E8F0;
+        }
+
         /* TAGS & BADGES */
         .badge-acid {
             background-color: var(--color-acid-yellow);
@@ -258,7 +283,7 @@
         </header>
 
         <!-- INPUT FORM -->
-        <div id="inputForm" class="flex-1 flex flex-col gap-10 fade-in delay-1">
+        <div id="inputForm" class="flex-1 flex flex-col gap-8 fade-in delay-1">
             
             <!-- Meal Selector -->
             <section>
@@ -268,6 +293,20 @@
                     <button class="meal-btn inactive" onclick="selectMeal(this, 'Pranzo')">Pranzo</button>
                     <button class="meal-btn inactive" onclick="selectMeal(this, 'Merenda')">Merenda</button>
                     <button class="meal-btn inactive" onclick="selectMeal(this, 'Cena')">Cena</button>
+                </div>
+            </section>
+
+            <!-- Cuisine Selector (New) -->
+            <section>
+                <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Stile Cucina</label>
+                <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="cuisineScroll">
+                    <button class="cuisine-btn active" onclick="selectCuisine(this, 'Italiana')">Italiana</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Giapponese')">Giapponese</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Cinese')">Cinese</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Indiana')">Indiana</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Messicana')">Messicana</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Greca')">Greca</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Internazionale')">Internazionale</button>
                 </div>
             </section>
 
@@ -334,6 +373,7 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         let selectedMeal = 'Colazione';
+        let selectedCuisine = 'Italiana'; // Default cuisine
         let apiKey = localStorage.getItem('k_recipes_key');
         let loaderInterval;
 
@@ -365,6 +405,16 @@
             });
             btn.classList.add('active');
             selectedMeal = meal;
+        }
+
+        function selectCuisine(btn, cuisine) {
+            document.querySelectorAll('.cuisine-btn').forEach(b => {
+                b.classList.remove('active');
+                b.classList.add('inactive');
+            });
+            btn.classList.remove('inactive');
+            btn.classList.add('active');
+            selectedCuisine = cuisine;
         }
 
         // --- HISTORY ---
@@ -495,6 +545,7 @@
                 
                 CONTESTO:
                 - Pasto: ${selectedMeal}
+                - Cucina: ${selectedCuisine}
                 - Prima: ${prev}
                 - Voglie: ${want ? want : "Ingredienti di stagione, italiani, economici"}
                 
