@@ -12,7 +12,6 @@
     
     <title>K Recipes</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fonts: Plus Jakarta Sans (Tech/Geo) & Inter (Clean UI) -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <style>
@@ -155,6 +154,39 @@
             padding: 4px 12px;
             font-size: 0.7rem;
             text-transform: uppercase;
+        }
+
+        /* PORTION CONTROLLER */
+        .portion-ctrl {
+            display: flex;
+            align-items: center;
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 4px;
+            gap: 8px;
+        }
+        .portion-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            color: #0F172A;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .portion-btn:active { transform: scale(0.95); }
+        .portion-val {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            width: 20px;
+            text-align: center;
         }
 
         /* ANIMATIONS */
@@ -453,31 +485,29 @@
 
             const uniqueId = Date.now() + Math.random().toString(16).slice(2);
             
-            // NUOVO PROMPT: SENZA LIMITI (Tranne Glutine) & INGREDIENTI ITALIANI
             const prompt = `
-                Sei un amico chef italiano, pratico e alla mano.
+                Sei un Personal Chef italiano esperto in nutrizione clinica (Leaky Gut, No Glutine, Basso Indice Glicemico).
                 [Request ID: ${uniqueId}]
                 
                 UTENTE: 
-                - Vuole mangiare bene.
-                - UNICO REQUISITO MEDICO: ASSOLUTAMENTE NO GLUTINE (Celiachia/Intolleranza).
-                - Per il resto: TUTTO OK. Vanno bene legumi, latticini, verdure, qualsiasi cosa purché sia buona.
+                - Profilo: Vive in Italia. Ha bisogno di concretezza ed economia domestica.
+                - Salute: Intolleranza Glutine, No picchi glicemici.
                 
                 CONTESTO:
                 - Pasto: ${selectedMeal}
-                - Prima ha mangiato: ${prev}
-                - Voglie: ${want ? want : "Fai tu, qualcosa di gustoso"}
+                - Prima: ${prev}
+                - Voglie: ${want ? want : "Ingredienti di stagione, italiani, economici"}
                 
-                REGOLE DIETETICHE:
-                1. NO GLUTINE (Tassativo).
-                2. Colazione: Salata o proteica.
-                3. Usa principalmente ingredienti comuni nei supermercati italiani (pasta senza glutine, riso, pollo, uova, tonno, verdure di stagione, legumi, parmigiano).
-                4. QUANTITÀ: Specifica sempre le dosi (es. 80g di pasta, 2 cucchiai di olio).
-                
-                LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
+                REGOLE OBBLIGATORIE:
+                1. INGREDIENTI: Usa principalmente cose che si trovano al supermercato sotto casa in Italia (uova, pollo, riso, patate, verdure di stagione, legumi, olio evo).
+                2. LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
                    - OPZIONE 1: "ZERO SBATTI" (Max 15 min, pochissimi ingredienti, padella unica o freddo).
                    - OPZIONE 2: "EQUILIBRATA" (Media difficoltà, il giusto compromesso).
                    - OPZIONE 3: "CHEF MODE" (Più elaborata, per quando si ha tempo/voglia).
+                3. FORMATO INGREDIENTI STRUTTURATO: 
+                   Devi fornire gli ingredienti in un array di oggetti, non stringhe. 
+                   Ogni oggetto deve avere: "q" (quantità numerica PER 1 PERSONA), "u" (unità di misura breve: g, ml, pz, cucchiai), "i" (nome ingrediente).
+                   Esempio: [{"q": 80, "u": "g", "i": "riso basmati"}, {"q": 2, "u": "pz", "i": "uova"}]
                 
                 TONO DI VOCE:
                 - Simpatico, diretto, da "amico che cucina". Eloquente e chiaro.
@@ -491,7 +521,10 @@
                         "time": "Tempo prep.",
                         "hack": "Consiglio furbo...",
                         "why": "Perché è buono...",
-                        "ingredients": ["80g Pasta", "200g Pomodori"],
+                        "ingredients": [
+                            {"q": 80, "u": "g", "i": "pasta senza glutine"},
+                            {"q": 200, "u": "g", "i": "passata di pomodoro"}
+                        ],
                         "steps": ["passo 1", "passo 2"]
                     },
                     { ... }, { ... }
@@ -546,6 +579,29 @@
             }
         }
 
+        // VARIABILE GLOBALE PER PORZIONI (Default 1)
+        let currentPortions = 1;
+
+        function updatePortions(delta, recipeIndex) {
+            const input = document.getElementById(`portion-${recipeIndex}`);
+            let newVal = parseInt(input.innerText) + delta;
+            if (newVal < 1) newVal = 1;
+            if (newVal > 10) newVal = 10;
+            
+            input.innerText = newVal;
+            
+            // Aggiorna le quantità nel DOM
+            const container = document.getElementById(`ing-container-${recipeIndex}`);
+            const baseData = JSON.parse(container.dataset.ingredients);
+            
+            container.innerHTML = baseData.map(ing => {
+                const totalQ = (ing.q * newVal).toLocaleString('it-IT'); // Calcola
+                return `<span class="bg-slate-50 border border-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                    ${totalQ}${ing.u} ${ing.i}
+                </span>`;
+            }).join('');
+        }
+
         function renderRecipes(recipes, modelName) {
             const container = document.getElementById('resultsArea');
             container.innerHTML = `
@@ -562,11 +618,13 @@
             recipes.forEach((r, i) => {
                 const delayClass = i === 0 ? 'delay-1' : (i === 1 ? 'delay-2' : 'delay-3');
                 
-                // Determina il badge di difficoltà
                 let difficultyBadge = '';
                 if (i === 0) difficultyBadge = '<span class="badge-acid">ZERO SBATTI</span>';
                 else if (i === 1) difficultyBadge = '<span class="badge-emerald bg-blue-50 text-blue-600 border-blue-100">EQUILIBRATO</span>';
                 else difficultyBadge = '<span class="badge-emerald bg-purple-50 text-purple-600 border-purple-100">CHEF MODE</span>';
+
+                // Serializza ingredienti per JS
+                const ingredientsJson = JSON.stringify(r.ingredients).replace(/"/g, '&quot;');
 
                 container.innerHTML += `
                     <div class="tech-card p-0 mb-8 fade-in ${delayClass} group">
@@ -600,9 +658,18 @@
                             </div>
 
                             <div>
-                                <h3 class="font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Ingredienti</h3>
-                                <div class="flex flex-wrap gap-2">
-                                    ${r.ingredients.map(ing => `<span class="bg-slate-50 border border-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">${ing}</span>`).join('')}
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="font-tech text-xs font-bold text-slate-400 uppercase tracking-widest">Ingredienti</h3>
+                                    <!-- PORTION CONTROLLER -->
+                                    <div class="portion-ctrl">
+                                        <div class="portion-btn" onclick="updatePortions(-1, ${i})">-</div>
+                                        <div class="text-[10px] uppercase font-bold text-slate-400">Pers.</div>
+                                        <div id="portion-${i}" class="portion-val">1</div>
+                                        <div class="portion-btn" onclick="updatePortions(1, ${i})">+</div>
+                                    </div>
+                                </div>
+                                <div id="ing-container-${i}" class="flex flex-wrap gap-2" data-ingredients="${ingredientsJson}">
+                                    ${r.ingredients.map(ing => `<span class="bg-slate-50 border border-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">${ing.q}${ing.u} ${ing.i}</span>`).join('')}
                                 </div>
                             </div>
                             
