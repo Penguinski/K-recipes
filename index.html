@@ -627,13 +627,13 @@
 
                 let jsonStr = rawText.substring(firstBracket, lastBracket + 1);
                 
-                // --- PULIZIA JSON AVANZATA (Fix chiavi senza virgolette e commenti) ---
+                // --- PULIZIA JSON AVANZATA (Fix per commenti e chiavi errate) ---
                 jsonStr = jsonStr
-                    .replace(/\/\/.*$/gm, '') // Via i commenti //
-                    .replace(/\/\*[\s\S]*?\*\//g, '') // Via i commenti /* */
-                    .replace(/,\s*]/g, ']') // Via virgole finali in array
-                    .replace(/,\s*}/g, '}') // Via virgole finali in oggetti
-                    // Correzione chiavi non quotate (es. q: -> "q":)
+                    .replace(/\/\/.*$/gm, '') // Rimuove commenti con //
+                    .replace(/\/\*[\s\S]*?\*\//g, '') // Rimuove commenti con /* */
+                    .replace(/,\s*]/g, ']') // Rimuove virgole finali in array
+                    .replace(/,\s*}/g, '}') // Rimuove virgole finali in oggetti
+                    // Fix chiavi non quotate (es. q: -> "q":)
                     .replace(/([{,]\s*)([a-zA-Z0-9_]+?)\s*:/g, '$1"$2":');
 
                 const parsedRecipes = JSON.parse(jsonStr);
@@ -642,8 +642,8 @@
                 renderRecipes(parsedRecipes, usedModelName);
 
             } catch (error) {
-                console.error("JSON Error Details:", error); // Utile per debug
-                alert("Errore di elaborazione ricetta (" + error.message + "). Riprova, andrà meglio!");
+                console.error("JSON Error:", error);
+                alert("Errore tecnico (" + error.message + "). Riprova, l'AI a volte è capricciosa!");
                 resetApp();
             } finally {
                 stopLoader();
@@ -711,7 +711,7 @@
                 const delayClass = i === 0 ? 'delay-1' : (i === 1 ? 'delay-2' : 'delay-3');
                 
                 let difficultyBadge = '';
-                if (i === 0) difficultyBadge = '<span class="badge-acid">ZERO SBATTI</span>';
+                if (i === 0) difficultyBadge = '<span class="badge-acid">FACILE</span>';
                 else if (i === 1) difficultyBadge = '<span class="badge-emerald bg-blue-50 text-blue-600 border-blue-100">EQUILIBRATA</span>';
                 else difficultyBadge = '<span class="badge-emerald bg-purple-50 text-purple-600 border-purple-100">CHEF MODE</span>';
 
