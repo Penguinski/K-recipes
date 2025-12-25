@@ -141,15 +141,13 @@
             `;
 
             try {
-                // === LISTA MODELLI AGGIORNATA SU RICHIESTA UTENTE ===
-                // Inseriamo gemini-3.0-flash e gemini-2.5-flash come richiesto.
-                // Se esistono, verranno usati. Se no, fallback sugli altri.
+                // MODELLI AGGIORNATI (Ordini come da te richiesto)
                 const models = [
-                    'gemini-3.0-flash',        // Richiesta esplicita Utente
-                    'gemini-2.5-flash',        // Richiesta esplicita Utente
-                    'gemini-2.0-flash-exp',    // Sperimentale recente
-                    'gemini-1.5-flash',        // Stabile e sicuro
-                    'gemini-1.5-pro'           // Backup potente
+                    'gemini-3.0-flash',        
+                    'gemini-2.5-flash',       
+                    'gemini-2.0-flash-exp',   
+                    'gemini-1.5-flash',       
+                    'gemini-1.5-pro'          
                 ];
                 
                 let response;
@@ -162,19 +160,14 @@
                         console.log("Tentativo connessione a:", model);
                         response = await fetchAI(model, apiKey, prompt);
 
-                        // 404 = Modello non trovato (non esiste o non accessibile) -> Prova il prossimo
                         if (response.status === 404) {
                             console.warn(model + " non trovato (404), passo al prossimo.");
                             continue;
                         }
-                        
-                        // 429/503 = Quota o Server -> Prova il prossimo
                         if (response.status === 429 || response.status === 503) {
                             console.warn(model + " occupato, passo al prossimo.");
                             continue;
                         }
-
-                        // 400/403 = Chiave errata -> Stop
                         if (response.status === 400 || response.status === 403) {
                             const errJson = await response.json();
                             throw new Error("CHIAVE_INVALIDA: " + (errJson.error?.message || "Errore permessi API."));
@@ -185,14 +178,13 @@
                             continue;
                         }
 
-                        // Successo!
                         const data = await response.json();
                         if (!data.candidates || !data.candidates[0].content) {
                             throw new Error("Risposta vuota");
                         }
                         
                         finalData = data;
-                        usedModelName = model; // Memorizziamo quale ha funzionato
+                        usedModelName = model;
                         break; 
 
                     } catch (e) {
@@ -208,7 +200,18 @@
                 
                 console.log("Generato con successo usando:", usedModelName);
                 
-                const jsonStr = finalData.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+                // === ESTRAZIONE JSON ROBUSTA (Fix per "Unexpected token E") ===
+                // L'AI a volte chiacchiera prima di dare il JSON ("Ecco a te...").
+                // Noi cerchiamo dove inizia la prima quadra [ e finisce l'ultima ].
+                const rawText = finalData.candidates[0].content.parts[0].text;
+                const firstBracket = rawText.indexOf('[');
+                const lastBracket = rawText.lastIndexOf(']');
+
+                if (firstBracket === -1 || lastBracket === -1) {
+                    throw new Error("L'AI non ha restituito un JSON valido (parentesi mancanti).");
+                }
+
+                const jsonStr = rawText.substring(firstBracket, lastBracket + 1);
                 renderRecipes(JSON.parse(jsonStr));
 
             } catch (error) {
