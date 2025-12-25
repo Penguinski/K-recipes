@@ -275,15 +275,13 @@
             `;
 
             try {
-                // === LISTA MODELLI ESTESA (Tentativi a raffica per Gemini 3) ===
+                // === LISTA MODELLI (Priorità all'Ultimo Modello) ===
                 const models = [
-                    'gemini-3.0-flash',          // Nome standard ipotetico
-                    'gemini-3.0-flash-exp',      // Possibile variante Experimental
-                    'gemini-3.0-flash-preview',  // Possibile variante Preview
-                    'gemini-3.0-flash-001',      // Possibile variante Versionata
+                    'gemini-3-flash-preview',    // CORREZIONE UTENTE: Il nuovo Gemini 3 Flash
                     'gemini-2.5-flash',          // Fallback richiesto
-                    'gemini-2.0-flash-exp',      // Fallback
-                    'gemini-1.5-flash'           // Fallback sicuro
+                    'gemini-2.0-flash-exp',      // Fallback sperimentale
+                    'gemini-1.5-flash',          // Fallback stabile
+                    'gemini-1.5-pro'             // Backup potente
                 ];
                 
                 let response;
@@ -293,7 +291,7 @@
 
                 for (const model of models) {
                     try {
-                        console.log("Provo modello:", model);
+                        console.log("Tentativo con:", model);
                         response = await fetchAI(model, apiKey, prompt);
 
                         if (response.status === 404) {
@@ -334,7 +332,7 @@
                     throw new Error("Nessun modello AI ha risposto. Riprova più tardi.");
                 }
                 
-                console.log("Successo con:", usedModelName);
+                console.log("Generato con successo usando:", usedModelName);
                 
                 const rawText = finalData.candidates[0].content.parts[0].text;
                 // Estrazione JSON robusta
