@@ -182,7 +182,7 @@
                 🥑
             </div>
             <h1 class="font-tech text-5xl font-bold mb-3 tracking-tight text-gradient">K Recipes.</h1>
-            <p class="text-slate-400 font-medium text-sm mb-12">The Future of Gut Intelligence.</p>
+            <p class="text-slate-400 font-medium text-sm mb-12">Il futuro dell'intelligenza alimentare.</p>
             
             <div class="w-full space-y-4">
                 <input type="password" id="apiKeyInput" placeholder="Incolla la tua API Key" 
@@ -207,10 +207,10 @@
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center text-xl font-bold font-tech">K.</div>
                 <div>
-                    <h1 class="font-tech text-xl font-bold text-slate-900 leading-none">Recipes</h1>
+                    <h1 class="font-tech text-xl font-bold text-slate-900 leading-none">Ricette</h1>
                     <div class="flex items-center gap-1.5 mt-1">
                         <span class="w-1.5 h-1.5 bg-[#58E877] rounded-full shadow-[0_0_8px_#58E877]"></span>
-                        <p class="text-slate-400 font-bold text-[10px] uppercase tracking-wide">Gemma 3 Online</p>
+                        <p class="text-slate-400 font-bold text-[10px] uppercase tracking-wide">Gemma 3 Attivo</p>
                     </div>
                 </div>
             </div>
@@ -230,7 +230,7 @@
             
             <!-- Meal Selector -->
             <section>
-                <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Target Pasto</label>
+                <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Pasto Obiettivo</label>
                 <div class="meal-container">
                     <button class="meal-btn active" onclick="selectMeal(this, 'Colazione')">Colazione</button>
                     <button class="meal-btn inactive" onclick="selectMeal(this, 'Pranzo')">Pranzo</button>
@@ -242,13 +242,13 @@
             <!-- Context Inputs -->
             <section class="space-y-6">
                 <div>
-                    <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Analisi Precedente</label>
-                    <textarea id="prevMeal" rows="1" placeholder="Cosa hai mangiato prima?" 
+                    <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Cosa hai mangiato prima?</label>
+                    <textarea id="prevMeal" rows="1" placeholder="Es. Pasta, Digiuno, Uova..." 
                         class="input-tech resize-none"></textarea>
                 </div>
                 <div>
-                    <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Voglie & Dispensa</label>
-                    <input type="text" id="craving" placeholder="Es. Ho delle zucchine..." 
+                    <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Voglie o ingredienti</label>
+                    <input type="text" id="craving" placeholder="Es. Ho delle zucchine, o qualcosa di fresco..." 
                         class="input-tech">
                 </div>
             </section>
@@ -271,7 +271,7 @@
                 <div class="absolute inset-0 flex items-center justify-center text-2xl animate-pulse">🥑</div>
             </div>
             <p id="loaderText" class="font-tech text-xl font-bold text-slate-800 tracking-tight">Analisi in corso...</p>
-            <p class="text-xs text-slate-400 mt-2 font-mono uppercase tracking-widest">Gemma 3 Processing</p>
+            <p class="text-xs text-slate-400 mt-2 font-mono uppercase tracking-widest">Elaborazione dati</p>
         </div>
 
         <!-- RESULTS AREA -->
@@ -451,37 +451,47 @@
             startLoader();
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            const uniqueId = Date.now();
+            const uniqueId = Date.now() + Math.random().toString(16).slice(2);
             
+            // NUOVO PROMPT: SENZA LIMITI (Tranne Glutine) & INGREDIENTI ITALIANI
             const prompt = `
-                Sei un Personal Chef italiano esperto in nutrizione clinica (Leaky Gut, No Glutine, Basso Indice Glicemico).
+                Sei un amico chef italiano, pratico e alla mano.
                 [Request ID: ${uniqueId}]
                 
                 UTENTE: 
-                - Profilo: Vive in Italia. Ha bisogno di concretezza ed economia domestica.
-                - Salute: Intolleranza Glutine, Leaky Gut, No picchi glicemici.
+                - Vuole mangiare bene.
+                - UNICO REQUISITO MEDICO: ASSOLUTAMENTE NO GLUTINE (Celiachia/Intolleranza).
+                - Per il resto: TUTTO OK. Vanno bene legumi, latticini, verdure, qualsiasi cosa purché sia buona.
                 
                 CONTESTO:
                 - Pasto: ${selectedMeal}
-                - Prima: ${prev}
-                - Voglie: ${want ? want : "Ingredienti di stagione, italiani, economici"}
+                - Prima ha mangiato: ${prev}
+                - Voglie: ${want ? want : "Fai tu, qualcosa di gustoso"}
                 
-                REGOLE OBBLIGATORIE:
-                1. INGREDIENTI: Usa cose che si trovano al supermercato sotto casa in Italia (uova, pollo, riso, patate, verdure di stagione, legumi, olio evo).
-                2. LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
+                REGOLE DIETETICHE:
+                1. NO GLUTINE (Tassativo).
+                2. Colazione: Salata o proteica.
+                3. Usa principalmente ingredienti comuni nei supermercati italiani (pasta senza glutine, riso, pollo, uova, tonno, verdure di stagione, legumi, parmigiano).
+                4. QUANTITÀ: Specifica sempre le dosi (es. 80g di pasta, 2 cucchiai di olio).
+                
+                LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
                    - OPZIONE 1: "ZERO SBATTI" (Max 15 min, pochissimi ingredienti, padella unica o freddo).
                    - OPZIONE 2: "EQUILIBRATA" (Media difficoltà, il giusto compromesso).
                    - OPZIONE 3: "CHEF MODE" (Più elaborata, per quando si ha tempo/voglia).
                 
+                TONO DI VOCE:
+                - Simpatico, diretto, da "amico che cucina". Eloquente e chiaro.
+                - Niente anglicismi inutili (usa "Filosofia del piatto" non "Concept").
+                
                 OUTPUT JSON (Strict Array):
                 [
                     {
-                        "emoji": "🍳",
-                        "title": "Nome (es. Zero Sbatti: Uova...)",
-                        "time": "10 min",
-                        "hack": "Consiglio glucosio...",
-                        "why": "Perché va bene...",
-                        "ingredients": ["uova", "passata", "pane s.g."],
+                        "emoji": "🍝",
+                        "title": "Nome del Piatto",
+                        "time": "Tempo prep.",
+                        "hack": "Consiglio furbo...",
+                        "why": "Perché è buono...",
+                        "ingredients": ["80g Pasta", "200g Pomodori"],
                         "steps": ["passo 1", "passo 2"]
                     },
                     { ... }, { ... }
@@ -552,7 +562,7 @@
             recipes.forEach((r, i) => {
                 const delayClass = i === 0 ? 'delay-1' : (i === 1 ? 'delay-2' : 'delay-3');
                 
-                // Determina il badge di difficoltà in base all'indice
+                // Determina il badge di difficoltà
                 let difficultyBadge = '';
                 if (i === 0) difficultyBadge = '<span class="badge-acid">ZERO SBATTI</span>';
                 else if (i === 1) difficultyBadge = '<span class="badge-emerald bg-blue-50 text-blue-600 border-blue-100">EQUILIBRATO</span>';
@@ -576,7 +586,7 @@
                             <div class="bg-[#FFFBA1] p-5 rounded-2xl border border-yellow-200/50">
                                 <p class="font-tech text-[10px] font-bold text-yellow-800 uppercase tracking-widest mb-2 flex items-center gap-2">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                                    Glucose Insight
+                                    Consiglio Metabolico
                                 </p>
                                 <p class="text-sm font-semibold text-slate-800 leading-relaxed">${r.hack}</p>
                             </div>
@@ -585,7 +595,7 @@
                         <!-- Content -->
                         <div class="p-8 space-y-8">
                             <div>
-                                <h3 class="font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Concept</h3>
+                                <h3 class="font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filosofia del piatto</h3>
                                 <p class="text-base text-slate-600 font-medium leading-relaxed">${r.why}</p>
                             </div>
 
