@@ -145,6 +145,9 @@
             transition: all 0.2s ease;
             border: 1px solid transparent;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .cuisine-btn.active {
             background: #0F172A;
@@ -296,17 +299,19 @@
                 </div>
             </section>
 
-            <!-- Cuisine Selector (New) -->
+            <!-- Cuisine Selector (New with Flags) -->
             <section>
                 <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Stile Cucina</label>
                 <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="cuisineScroll">
-                    <button class="cuisine-btn active" onclick="selectCuisine(this, 'Italiana')">Italiana</button>
-                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Giapponese')">Giapponese</button>
-                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Cinese')">Cinese</button>
-                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Indiana')">Indiana</button>
-                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Messicana')">Messicana</button>
-                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Greca')">Greca</button>
-                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Internazionale')">Internazionale</button>
+                    <button class="cuisine-btn active" onclick="selectCuisine(this, 'Italiana')">🇮🇹 Italiana</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Giapponese')">🇯🇵 Giapponese</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Cinese')">🇨🇳 Cinese</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Indiana')">🇮🇳 Indiana</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Messicana')">🇲🇽 Messicana</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Greca')">🇬🇷 Greca</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Francese')">🇫🇷 Francese</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Thailandese')">🇹🇭 Thai</button>
+                    <button class="cuisine-btn inactive" onclick="selectCuisine(this, 'Internazionale')">🌍 World</button>
                 </div>
             </section>
 
@@ -547,18 +552,19 @@
                 - Pasto: ${selectedMeal}
                 - Cucina: ${selectedCuisine}
                 - Prima: ${prev}
-                - Voglie: ${want ? want : "Ingredienti di stagione, italiani, economici"}
+                - Voglie: ${want ? want : "Fai tu"}
                 
                 REGOLE OBBLIGATORIE:
-                1. INGREDIENTI: Usa principalmente cose che si trovano al supermercato sotto casa in Italia.
-                2. LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
+                1. PORZIONI: Genera ingredienti e quantità per 1 SOLA PERSONA.
+                2. INGREDIENTI: Usa principalmente cose che si trovano al supermercato sotto casa in Italia.
+                3. LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
                    - OPZIONE 1: "FACILE" (Max 15 min, pochissimi ingredienti, padella unica o freddo).
                    - OPZIONE 2: "EQUILIBRATA" (Media difficoltà, il giusto compromesso).
                    - OPZIONE 3: "CHEF MODE" (Più elaborata, per quando si ha tempo/voglia).
-                3. FORMATO INGREDIENTI STRUTTURATO: 
+                4. FORMATO INGREDIENTI STRUTTURATO: 
                    Devi fornire gli ingredienti in un array di oggetti.
                    Esempio: [{"q": 80, "u": "g", "i": "riso basmati"}, {"q": 2, "u": "pz", "i": "uova"}]
-                4. CRITICO: 
+                5. CRITICO: 
                    - Usa SOLO JSON valido (RFC 8259).
                    - TUTTE le chiavi devono avere le virgolette doppie (es. "q": 10, non q: 10).
                    - NON inserire commenti (//).
@@ -706,7 +712,7 @@
                 
                 let difficultyBadge = '';
                 if (i === 0) difficultyBadge = '<span class="badge-acid">ZERO SBATTI</span>';
-                else if (i === 1) difficultyBadge = '<span class="badge-emerald bg-blue-50 text-blue-600 border-blue-100">EQUILIBRATO</span>';
+                else if (i === 1) difficultyBadge = '<span class="badge-emerald bg-blue-50 text-blue-600 border-blue-100">EQUILIBRATA</span>';
                 else difficultyBadge = '<span class="badge-emerald bg-purple-50 text-purple-600 border-purple-100">CHEF MODE</span>';
 
                 // Serializza ingredienti per JS
