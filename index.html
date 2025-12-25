@@ -12,6 +12,7 @@
     
     <title>K Recipes</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts: Plus Jakarta Sans (Tech/Geo) & Inter (Clean UI) -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <style>
@@ -548,7 +549,6 @@
                 Analizza l'input dell'utente nella sezione "Voglie".
                 - Se l'utente chiede cose NON commestibili (es. "aeroplanino di carta", "codice", "poesia", "storia"), IGNORA COMPLETAMENTE LA RICHIESTA e proponi invece 3 ricette sane e gustose a tua scelta basate sul contesto del pasto.
                 - NON uscire MAI dal personaggio di Chef. NON dare istruzioni di bricolage, meccanica o altro.
-                - Se l'input è ambiguo, interpretalo SEMPRE in chiave culinaria (es. "bomba" -> "bomba alla crema", "mattone" -> "mattone dolce").
                 *******************************
 
                 UTENTE: 
@@ -559,12 +559,12 @@
                 - Pasto: ${selectedMeal}
                 - Cucina: ${selectedCuisine}
                 - Prima: ${prev}
-                - Voglie (DA VALIDARE): "${want ? want : "Fai tu"}" -> SE NON È CIBO, IGNORA.
+                - Voglie (DA VALIDARE): "${want ? want : "Fai tu"}"
                 
                 REGOLE OBBLIGATORIE:
                 1. PORZIONI: Genera ingredienti e quantità per 1 SOLA PERSONA.
                 2. GESTIONE VOGLIE (CRITICO): 
-                   - Se l'input è valido (cibo): Se l'utente chiede un PIATTO SPECIFICO (es. "ravioli"), ALMENO 2 PROPOSTE SU 3 DEVONO ESSERE VARIANTI DI QUEL PIATTO.
+                   - Se l'utente chiede un PIATTO SPECIFICO (es. "ravioli"), ALMENO 2 PROPOSTE SU 3 DEVONO ESSERE VARIANTI DI QUEL PIATTO.
                    - Se il piatto richiede tempo, nella ricetta "EQUILIBRATA" o "CHEF MODE" metti la procedura vera. Nella "FACILE" usa scorciatoie.
                 
                 3. LE 3 PROPOSTE DEVONO ESSERE DISTINTE:
@@ -581,9 +581,9 @@
                 6. NO ERRORI TECNICI: 
                    - Usa SOLO JSON valido (RFC 8259).
                    - TUTTE le chiavi con virgolette doppie.
-                   - NO commenti.
+                   - NO commenti nel JSON (né // né /*).
                 
-                OUTPUT JSON (Strict Array):
+                OUTPUT FORMAT: RAW JSON ONLY. No markdown. No comments.
                 [
                     {
                         "emoji": "🥟",
@@ -629,39 +629,47 @@
                 if (!finalData) throw new Error("Servizi momentaneamente occupati.");
                 
                 const rawText = finalData.candidates[0].content.parts[0].text;
-                // Estrazione più robusta (cerca la prima quadra e l'ultima quadra)
-                const firstBracket = rawText.indexOf('[');
-                const lastBracket = rawText.lastIndexOf(']');
-
-                if (firstBracket === -1 || lastBracket === -1) {
-                    // Fallback se l'AI risponde male: prova a pulire tutto tranne JSON
-                    console.error("JSON Bracket Error. Raw:", rawText);
-                    throw new Error("Formato risposta non valido.");
-                }
-
-                let jsonStr = rawText.substring(firstBracket, lastBracket + 1);
+                const recipes = cleanAndParseJSON(rawText);
                 
-                // PULIZIA AGGRESSIVA PER EVITARE "JSON Parse error: Unrecognized token '/'"
-                jsonStr = jsonStr
-                    .replace(/\/\/.*$/gm, '') // Rimuove commenti single line //
-                    .replace(/\/\*[\s\S]*?\*\//g, '') // Rimuove commenti multi line /* */
-                    .replace(/,\s*]/g, ']') // Rimuove virgole finali in array
-                    .replace(/,\s*}/g, '}') // Rimuove virgole finali in oggetti
-                    .replace(/```json/g, '') // Rimuove markdown residuo
-                    .replace(/```/g, ''); // Rimuove markdown residuo
-
-                const parsedRecipes = JSON.parse(jsonStr);
-                
-                saveToHistory(parsedRecipes, { model: usedModelName });
-                renderRecipes(parsedRecipes, usedModelName);
+                saveToHistory(recipes, { model: usedModelName });
+                renderRecipes(recipes, usedModelName);
 
             } catch (error) {
-                console.error("Errore Dettagliato:", error);
-                alert("Errore tecnico (" + error.message + "). Riprova, a volte i modelli sono capricciosi.");
+                console.error("Errore:", error);
+                alert("Errore tecnico (" + error.message + "). Riprova.");
                 resetApp();
             } finally {
                 stopLoader();
             }
+        }
+
+        // Funzione di pulizia avanzata per JSON
+        function cleanAndParseJSON(rawText) {
+            // 1. Rimuove markdown fences
+            let cleanText = rawText.replace(/```json/g, '').replace(/```/g, '');
+
+            // 2. Trova la prima quadra e l'ultima quadra
+            const firstBracket = cleanText.indexOf('[');
+            const lastBracket = cleanText.lastIndexOf(']');
+
+            if (firstBracket === -1 || lastBracket === -1) {
+                 throw new Error("Formato dati non valido (mancano parentesi quadre).");
+            }
+
+            cleanText = cleanText.substring(firstBracket, lastBracket + 1);
+
+            // 3. Rimuove commenti in stile JS // e /* */
+            // Questa regex rimuove righe che contengono solo commenti o commenti alla fine della riga
+            cleanText = cleanText.replace(/\/\/.*$/gm, '');
+            cleanText = cleanText.replace(/\/\*[\s\S]*?\*\//g, '');
+
+            // 4. Rimuove virgole "appese" (trailing commas)
+            cleanText = cleanText.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
+            
+            // 5. Corregge chiavi non quotate (es. q: -> "q":)
+            cleanText = cleanText.replace(/([{,]\s*)([a-zA-Z0-9_]+?)\s*:/g, '$1"$2":');
+
+            return JSON.parse(cleanText);
         }
 
         // VARIABILE GLOBALE PER PORZIONI (Default 1)
