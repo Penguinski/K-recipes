@@ -248,7 +248,7 @@
                 </div>
                 <div>
                     <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Voglie & Dispensa</label>
-                    <input type="text" id="craving" placeholder="Es. Salmone, qualcosa di fresco..." 
+                    <input type="text" id="craving" placeholder="Es. Ho delle zucchine..." 
                         class="input-tech">
                 </div>
             </section>
@@ -454,27 +454,35 @@
             const uniqueId = Date.now();
             
             const prompt = `
-                Sei un Personal Chef d'élite (Moderno, Tech, Sano).
-                [ID: ${uniqueId}]
+                Sei un Personal Chef italiano esperto in nutrizione clinica (Leaky Gut, No Glutine, Basso Indice Glicemico).
+                [Request ID: ${uniqueId}]
                 
-                CLIENTE: Intolleranza Glutine (NCGS), Leaky Gut, No Picchi Glicemici.
-                ATTUALE: Pasto=${selectedMeal}. Prima=${prev}. Voglie=${want}.
+                UTENTE: 
+                - Profilo: Vive in Italia. Ha bisogno di concretezza ed economia domestica.
+                - Salute: Intolleranza Glutine, Leaky Gut, No picchi glicemici.
                 
-                REGOLE:
-                1. ZERO GLUTINE.
-                2. Colazione: SALATA o proteica.
-                3. GLUCOSE HACK: Consiglio scientifico.
+                CONTESTO:
+                - Pasto: ${selectedMeal}
+                - Prima: ${prev}
+                - Voglie: ${want ? want : "Ingredienti di stagione, italiani, economici"}
                 
-                OUTPUT JSON:
+                REGOLE OBBLIGATORIE:
+                1. INGREDIENTI: Usa cose che si trovano al supermercato sotto casa in Italia (uova, pollo, riso, patate, verdure di stagione, legumi, olio evo).
+                2. LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
+                   - OPZIONE 1: "ZERO SBATTI" (Max 15 min, pochissimi ingredienti, padella unica o freddo).
+                   - OPZIONE 2: "EQUILIBRATA" (Media difficoltà, il giusto compromesso).
+                   - OPZIONE 3: "CHEF MODE" (Più elaborata, per quando si ha tempo/voglia).
+                
+                OUTPUT JSON (Strict Array):
                 [
                     {
-                        "emoji": "🌿",
-                        "title": "Titolo Moderno",
-                        "time": "15 min",
-                        "hack": "Consiglio...",
-                        "why": "Beneficio...",
-                        "ingredients": ["ing1", "ing2"],
-                        "steps": ["step1", "step2"]
+                        "emoji": "🍳",
+                        "title": "Nome (es. Zero Sbatti: Uova...)",
+                        "time": "10 min",
+                        "hack": "Consiglio glucosio...",
+                        "why": "Perché va bene...",
+                        "ingredients": ["uova", "passata", "pane s.g."],
+                        "steps": ["passo 1", "passo 2"]
                     },
                     { ... }, { ... }
                 ]
@@ -544,15 +552,22 @@
             recipes.forEach((r, i) => {
                 const delayClass = i === 0 ? 'delay-1' : (i === 1 ? 'delay-2' : 'delay-3');
                 
+                // Determina il badge di difficoltà in base all'indice
+                let difficultyBadge = '';
+                if (i === 0) difficultyBadge = '<span class="badge-acid">ZERO SBATTI</span>';
+                else if (i === 1) difficultyBadge = '<span class="badge-emerald bg-blue-50 text-blue-600 border-blue-100">EQUILIBRATO</span>';
+                else difficultyBadge = '<span class="badge-emerald bg-purple-50 text-purple-600 border-purple-100">CHEF MODE</span>';
+
                 container.innerHTML += `
                     <div class="tech-card p-0 mb-8 fade-in ${delayClass} group">
                         
                         <!-- Header -->
                         <div class="p-8 pb-0">
-                            <div class="flex justify-between items-start mb-6">
+                            <div class="flex justify-between items-start mb-4">
                                 <div class="text-6xl filter drop-shadow-md transition-transform group-hover:scale-110 duration-300">${r.emoji}</div>
                                 <span class="bg-black text-white text-[11px] font-bold px-4 py-1.5 rounded-full shadow-lg shadow-black/20">${r.time}</span>
                             </div>
+                            <div class="mb-3">${difficultyBadge}</div>
                             <h2 class="font-tech text-3xl font-bold text-slate-900 leading-tight mb-2">${r.title}</h2>
                         </div>
                         
