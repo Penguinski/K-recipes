@@ -491,7 +491,7 @@
                 
                 UTENTE: 
                 - Profilo: Vive in Italia. Ha bisogno di concretezza ed economia domestica.
-                - Salute: Intolleranza Glutine, Leaky Gut, No picchi glicemici.
+                - Salute: Intolleranza Glutine, No picchi glicemici.
                 
                 CONTESTO:
                 - Pasto: ${selectedMeal}
@@ -499,19 +499,22 @@
                 - Voglie: ${want ? want : "Ingredienti di stagione, italiani, economici"}
                 
                 REGOLE OBBLIGATORIE:
-                1. INGREDIENTI: Usa cose che si trovano al supermercato sotto casa in Italia (uova, pollo, riso, patate, verdure di stagione, legumi, olio evo). BASTA AVOCADO, SALMONE e QUINOA (usali solo se richiesti esplicitamente o raramente).
+                1. INGREDIENTI: Usa principalmente cose che si trovano al supermercato sotto casa in Italia.
                 2. LE 3 PROPOSTE DEVONO ESSERE DIVERSE PER IMPEGNO:
-                   - OPZIONE 1: "ZERO SBATTI" (Max 10 min, pochissimi ingredienti, padella unica o freddo).
+                   - OPZIONE 1: "FACILE" (Max 15 min, pochissimi ingredienti, padella unica o freddo).
                    - OPZIONE 2: "EQUILIBRATA" (Media difficoltà, il giusto compromesso).
                    - OPZIONE 3: "CHEF MODE" (Più elaborata, per quando si ha tempo/voglia).
                 3. FORMATO INGREDIENTI STRUTTURATO: 
-                   Devi fornire gli ingredienti in un array di oggetti, non stringhe. 
-                   Ogni oggetto deve avere: "q" (quantità numerica PER 1 PERSONA), "u" (unità di misura breve: g, ml, pz, cucchiai), "i" (nome ingrediente).
+                   Devi fornire gli ingredienti in un array di oggetti.
                    Esempio: [{"q": 80, "u": "g", "i": "riso basmati"}, {"q": 2, "u": "pz", "i": "uova"}]
+                4. CRITICO: 
+                   - Usa SOLO JSON valido (RFC 8259).
+                   - TUTTE le chiavi devono avere le virgolette doppie (es. "q": 10, non q: 10).
+                   - NON inserire commenti (//).
                 
                 TONO DI VOCE:
                 - Simpatico, diretto, da "amico che cucina". Eloquente e chiaro.
-                - Niente anglicismi inutili (usa "Filosofia del piatto" non "Concept").
+                - Niente anglicismi inutili.
                 
                 OUTPUT JSON (Strict Array):
                 [
@@ -565,14 +568,25 @@
 
                 if (firstBracket === -1) throw new Error("Formato non valido.");
 
-                const jsonStr = rawText.substring(firstBracket, lastBracket + 1);
+                let jsonStr = rawText.substring(firstBracket, lastBracket + 1);
+                
+                // --- PULIZIA JSON AVANZATA (Fix chiavi senza virgolette e commenti) ---
+                jsonStr = jsonStr
+                    .replace(/\/\/.*$/gm, '') // Via i commenti //
+                    .replace(/\/\*[\s\S]*?\*\//g, '') // Via i commenti /* */
+                    .replace(/,\s*]/g, ']') // Via virgole finali in array
+                    .replace(/,\s*}/g, '}') // Via virgole finali in oggetti
+                    // Correzione chiavi non quotate (es. q: -> "q":)
+                    .replace(/([{,]\s*)([a-zA-Z0-9_]+?)\s*:/g, '$1"$2":');
+
                 const parsedRecipes = JSON.parse(jsonStr);
                 
                 saveToHistory(parsedRecipes, { model: usedModelName });
                 renderRecipes(parsedRecipes, usedModelName);
 
             } catch (error) {
-                alert("Errore: " + error.message);
+                console.error("JSON Error Details:", error); // Utile per debug
+                alert("Errore di elaborazione ricetta (" + error.message + "). Riprova, andrà meglio!");
                 resetApp();
             } finally {
                 stopLoader();
