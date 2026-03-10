@@ -158,20 +158,21 @@
 
         /* DIET TOGGLES */
         .diet-toggle {
-            padding: 9px 16px;
+            padding: 10px 20px;
             border-radius: 99px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
             white-space: nowrap;
             transition: all 0.2s ease;
-            border: 1.5px solid #E2E8F0;
+            border: 1px solid #E2E8F0;
             background: #F8FAFC;
             color: var(--text-muted);
             cursor: pointer;
             user-select: none;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            flex-shrink: 0;
         }
         .diet-toggle.active {
             background: #ECFDF5;
@@ -359,7 +360,7 @@
             <!-- DIET PREFERENCES -->
             <section>
                 <label class="block font-tech text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Preferenze Dietetiche</label>
-                <div class="flex flex-wrap gap-2" id="dietToggles">
+                <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="dietToggles">
                     <button class="diet-toggle" onclick="toggleDiet(this, 'Senza glutine')" data-diet="Senza glutine">🌾 Senza Glutine</button>
                     <button class="diet-toggle" onclick="toggleDiet(this, 'Senza lattosio')" data-diet="Senza lattosio">🥛 Senza Lattosio</button>
                     <button class="diet-toggle" onclick="toggleDiet(this, 'Vegetariano')" data-diet="Vegetariano">🥦 Vegetariano</button>
@@ -724,10 +725,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        thinking_level: "minimal"
-                    }
+                    contents: [{ parts: [{ text: prompt }] }]
                 })
             });
             return response;
@@ -836,8 +834,8 @@
                         console.log("Tentativo:", model);
                         response = await fetchAI(model, apiKey, prompt);
 
-                        if (response.status === 404 || response.status === 429 || response.status === 503) continue;
-                        if (response.status === 400 || response.status === 403) throw new Error("Chiave non valida.");
+                        if (response.status === 404 || response.status === 400 || response.status === 429 || response.status === 503) continue;
+                        if (response.status === 403) throw new Error("Chiave non valida.");
                         if (!response.ok) continue;
 
                         const data = await response.json();
