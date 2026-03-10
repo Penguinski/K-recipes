@@ -725,7 +725,10 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        thinking_level: "minimal"
+                    }
                 })
             });
             return response;
@@ -834,19 +837,25 @@
                         console.log("Tentativo:", model);
                         response = await fetchAI(model, apiKey, prompt);
 
-                        if (response.status === 404 || response.status === 400 || response.status === 429 || response.status === 503) continue;
-                        if (response.status === 403) throw new Error("Chiave non valida.");
-                        if (!response.ok) continue;
+                        console.log(`Modello: ${model} → Status: ${response.status}`);
+
+                        if (!response.ok) {
+                            const errBody = await response.json().catch(() => ({}));
+                            console.error(`Errore ${response.status}:`, JSON.stringify(errBody));
+                            if (response.status === 403) throw new Error(`Chiave non valida o non autorizzata (403).`);
+                            if (response.status === 400) throw new Error(`Bad request (400): ${errBody?.error?.message || 'parametri non validi'}`);
+                            continue;
+                        }
 
                         const data = await response.json();
-                        if (!data.candidates || !data.candidates[0].content) throw new Error("Vuoto");
+                        if (!data.candidates || !data.candidates[0].content) throw new Error("Risposta vuota dal modello.");
                         
                         finalData = data;
                         usedModelName = model;
                         break; 
 
                     } catch (e) {
-                        if (e.message.includes("Chiave")) throw e;
+                        if (e.message.includes("403") || e.message.includes("400")) throw e;
                     }
                 }
 
